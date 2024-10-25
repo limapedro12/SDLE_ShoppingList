@@ -1,10 +1,10 @@
-# SDLE Second Assignment
+# SDLE Assignment
 
-SDLE Second Assignment of group T&lt;m&gt;&lt;n&gt;G&lt;p&gt;&lt;q&gt;.
+SDLE Assignment of group T05G14;.
 
 Group members:
 
-1. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-2. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-3. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-4. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
+1. João Coelho (up202004846@up.pt)
+2. João Mota (up202108677@up.pt)
+3. Pedro Lima (up20218806@up.pt)
+4. António Rego (up202108666@up.pt)
