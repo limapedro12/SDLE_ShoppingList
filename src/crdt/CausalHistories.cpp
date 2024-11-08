@@ -2,17 +2,16 @@
 
 using namespace std;
 
-class causalHistories {
+class CausalHistories {
 
     private:
 
     map<int, int> causalHistory;
 
-
     public:
 
     // Constructor
-    causalHistories(){
+    CausalHistories(){
         this->causalHistory = {};
     }
 
@@ -22,6 +21,15 @@ class causalHistories {
             this->causalHistory[id] = 1;
         } else {
             this->causalHistory[id] += 1;
+        }
+    }
+
+    // give the id and get the key value pair from the causal history
+    int get(int id){
+        if(this->causalHistory.find(id) == this->causalHistory.end()){
+            return 0;
+        } else {
+            return this->causalHistory[id];
         }
     }
     
