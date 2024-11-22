@@ -1,4 +1,6 @@
 #include <map>;
+#include <iostream>;
+#include <numeric>;
 #include "CausalHistories.cpp";
 
 using namespace std;
@@ -22,6 +24,22 @@ public:
         this->user_id = user_id;
     }
 
+    void reset(){
+        this->m.clear();
+    }
+
+    int value(){
+        return reduce(m.begin(), m.end(), 0, [](int sum, const auto &p)
+                      { return sum + p.second.first - p.second.second; });
+    }
+
+    // TODO
+    CRDTCounter merge(CRDTCounter other){
+        this->causalHistory.merge(other.causalHistory);
+        this->m.merge(other.m);
+        return *this;
+    }
+
     void fresh(){
         causalHistory.add(user_id);
         int contextNum = causalHistory.get(user_id);
@@ -29,11 +47,11 @@ public:
     }
 
     void update(pair<int, int> pair){
-        if
+        if (m.find({usei_id, causalHistory.get(user_id)}) == m.end())
+            this->fresh();
+        m[{user_id, causalHistory.get(user_id)}].first += pair.first;
+        m[{user_id, causalHistory.get(user_id)}].second += pair.second;
     }
-
-
-
 }
 
 typedef map<string, CRDTCounter> crdtMap OurCRDT;
