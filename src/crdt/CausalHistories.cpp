@@ -66,21 +66,21 @@ class CausalHistories {
         auto my_it = causalHistory.begin();
         auto ch_it = ch.getMap().begin();
 
+        bool found_higher = false;
         while (true){
-            bool found_higher = false;
             if(my_it == causalHistory.end())
                 return found_higher;
             else if (ch_it == ch.getMap().end())
-                return true;
+                return false;
             else if (my_it->first == ch_it->first){
                 if (my_it->second < ch_it->second)
                     found_higher = true;
-                if (my_it->second > ch_it->second)
+                else if (my_it->second > ch_it->second)
                     return false;
                 my_it++;
                 ch_it++;
             } else if (my_it->first < ch_it->first)
-                return false;
+                return true;
             else
                 my_it++;
         }
@@ -94,8 +94,7 @@ class CausalHistories {
 
     string print(){
         string s = "";
-        for (auto it = causalHistory.begin(); it != causalHistory.end(); it++)
-        {
+        for (auto it = causalHistory.begin(); it != causalHistory.end(); it++){
             s += to_string(it->first) + ":" + to_string(it->second) + " ";
         }
         return s;
@@ -112,6 +111,7 @@ int main() {
     CausalHistories ch2;
     ch2.add(1);
     ch2.add(2);
+    ch2.add(3);
 
     CausalHistories ch1_copy = ch1.copy();
     ch1_copy.add(1);
@@ -121,6 +121,6 @@ int main() {
     cout << ch2.print() << endl;
 
     cout << (bool)(ch1 == ch2) << endl;
-    cout << (bool)(ch1 < ch1_copy) << endl;
+    cout << (bool)(ch2 < ch1) << endl;
 
 }
