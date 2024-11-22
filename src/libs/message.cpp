@@ -2,7 +2,7 @@
 
 Message::Message(nlohmann::json json){
     this->json = json;
-    this->operation = json["operatiom"];
+    this->operation = json["operation"];
     this->id = json["id"];
     this->data = json["data"];
 }

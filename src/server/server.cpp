@@ -3,6 +3,24 @@
 #include <string>
 #include <iostream>
 
+/**
+ * @brief Handle the received message
+ */
+Message handleMessage(Message received){
+    switch (received.getOperation())
+    {
+        case "helloWorld":
+            std::unordered_map<std::string, int> data = {{"Here", 1}, {"Is", 2}, {"Data", 3}};
+            return Message(received.getOperation(), received.getId(), data);
+            break;
+        default:
+            std::cout << "Error: Operation requested not handleable" << std::endl;
+            std::unordered_map<std::string, int> data = {{"Error", 1}};
+            return Message("error", received.getId(), data);
+            break;
+    }
+}
+
 int main (void) 
 {
     zmq::context_t context(1);
@@ -25,8 +43,7 @@ int main (void)
         sleep (1);
 
         // Build a reply message
-        std::unordered_map<std::string, int> data = {{"Here", 1}, {"Is", 2}, {"Data", 3}};
-        Message reply(received.getOperation(), received.getId(), data);
+        Message reply = handleMessage(received);
 
         //  Send reply back to client
         s_send (socket, reply.toString());
