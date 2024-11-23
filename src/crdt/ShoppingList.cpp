@@ -39,7 +39,6 @@ public:
     }
     if (items.find(item) == items.end()){
       items[item] = CRDTCounter();
-      items[item].incr(n, user_id);
     }
     items[item].incr(n, user_id);
   }
@@ -149,31 +148,31 @@ public:
   }
 };
 
-int main(){
-  int user_id = 1;
-  int user_id2 = 2;
-  ShoppingList shopping_list("1");
-  shopping_list.set_user_id(user_id);
+// int main(){
+//   int user_id = 1;
+//   int user_id2 = 2;
+//   ShoppingList shopping_list("1");
+//   shopping_list.set_user_id(user_id);
 
-  shopping_list.add("apple");
-  shopping_list.add("banana");
-  shopping_list.add("apple", 3);
+//   shopping_list.add("apple");
+//   shopping_list.add("banana");
+//   shopping_list.add("apple", 3);
 
-  cout << shopping_list.print() << endl
-       << endl;
+//   cout << shopping_list.print() << endl
+//        << endl;
 
-  ShoppingList shopping_list_copy = shopping_list.copy();
-  shopping_list_copy.set_user_id(user_id2);
-  shopping_list_copy.add("orange");
-  shopping_list_copy.add("apple", 2);
-  shopping_list_copy.add("banana", 20);
-  shopping_list_copy.decrease("banana", 21);
+//   ShoppingList shopping_list_copy = shopping_list.copy();
+//   shopping_list_copy.set_user_id(user_id2);
+//   shopping_list_copy.add("orange");
+//   shopping_list_copy.add("apple", 2);
+//   shopping_list_copy.add("banana", 20);
+//   shopping_list_copy.decrease("banana", 21);
 
-  shopping_list.decrease("apple");
-  shopping_list.decrease("banana", 2);
+//   shopping_list.decrease("apple");
+//   shopping_list.decrease("banana", 2);
 
-  cout << shopping_list.print() << endl;
-  cout << shopping_list_copy.print() << endl;
-  cout << shopping_list.merge(shopping_list_copy).print() << endl;
+//   cout << shopping_list.print() << endl;
+//   cout << shopping_list_copy.print() << endl;
+//   cout << shopping_list.merge(shopping_list_copy).print() << endl;
 
-}
+// }
