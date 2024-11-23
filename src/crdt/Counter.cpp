@@ -10,7 +10,6 @@ using namespace std;
 
 class CRDTCounter{
 private:
-    int user_id;
     // pair<user_id, context_num> pair<positive_counter, negative_counter>
     map<pair<int, int>, pair<unsigned, unsigned>> m;
     CausalHistories causalHistory;
@@ -25,10 +24,6 @@ public:
         return m;
     }
 
-    void set_user_id(int user_id){
-        this->user_id = user_id;
-    }
-
     void reset(){
         this->m.clear();
     }
@@ -36,37 +31,30 @@ public:
     int value(){
         return accumulate(m.begin(), m.end(), 0, [](int sum, const auto &p)
                           { return sum + p.second.first - p.second.second; });
-
-        // iterative form
-        // int sum = 0;
-        // for (auto &p : m){
-        //     sum += p.second.first - p.second.second;
-        // }
-        // return sum;
     }
 
-    void incr(){
-        this->update({1, 0});
+    void incr(int user_id){
+        this->update({1, 0}, user_id);
     }
 
-    void decr(){
-        this->update({0, 1});
+    void decr(int user_id){
+        this->update({0, 1}, user_id);
     }
 
-    void incr(int n){
-        this->update({n, 0});
+    void incr(int n, int user_id){
+        this->update({n, 0}, user_id);
     }
 
-    void decr(int n){
-        this->update({0, n});
+    void decr(int n, int user_id){
+        this->update({0, n}, user_id);
     }
 
-    void set_value(int n){
+    void set_value(int n, int user_id){
         int val = n - this->value();
         if (val > 0)
-            this->incr(val);
+            this->incr(val, user_id);
         else if (val < 0)
-            this->decr(-val);
+            this->decr(-val, user_id);
     }
 
     CRDTCounter merge(CRDTCounter other){
@@ -81,6 +69,8 @@ public:
                     max(val.second.second, other_pair->second.second)
                 };
                 new_counter.m[val.first] = pair;
+                // if(new_counter.value() < 0)
+                //     new_counter.m[val.first].second = pair.first;
             }
             else if (other.causalHistory < val.first){
                 new_counter.m[val.first] = val.second;
@@ -105,15 +95,15 @@ public:
         return new_counter;
     }
 
-    void fresh(){
+    void fresh(int user_id){
         causalHistory.add(user_id);
         int contextNum = causalHistory.get(user_id);
         m[{user_id, contextNum}] = {0, 0};
     }
 
-    void update(pair<int, int> pair){
+    void update(pair<int, int> pair, int user_id){
         if (m.find({user_id, causalHistory.get(user_id)}) == m.end())
-            this->fresh();
+            this->fresh(user_id);
         m[{user_id, causalHistory.get(user_id)}].first += pair.first;
         m[{user_id, causalHistory.get(user_id)}].second += pair.second;
     }
@@ -121,86 +111,24 @@ public:
 
 typedef map<string, CRDTCounter> CRDTCounterMap;
 
-int main(){
-    CRDTCounter counter;
-    counter.incr(2);
+// int main(){
+//     int user_id = 1;
+//     int user_id2 = 2;
+//     CRDTCounter counter;
+//     counter.incr(2, user_id);
 
-    cout << counter.value() << endl;
+//     cout << counter.value() << endl;
 
-    CRDTCounter counter2 = counter.copy();
-    counter.fresh();
+//     CRDTCounter counter2 = counter.copy();
+//     counter.fresh(user_id);
 
-    counter.incr(3);
+//     counter.incr(3, user_id);
 
-    counter2.reset();
+//     counter2.reset();
 
-    cout << counter.value() << endl;
-    cout << counter2.value() << endl;
-    cout << counter.merge(counter2).value() << endl;
+//     cout << counter.value() << endl;
+//     cout << counter2.value() << endl;
+//     cout << counter.merge(counter2).value() << endl;
 
-    return 0;
-}
-
-//     public:
-
-//         AddWinsAWSet(){
-//             this->addSet = {};
-//             this->causalHistory = causalHistories();
-//         }
-
-//         void add(int id, T element){
-//             this->causalHistory.add(id);
-//             if (this->contains(element)){
-//                 this->getElement(element)->second.second = this->causalHistory.get(id);
-//             }
-//             else{
-//                 this->addSet.insert({element, {id, this->causalHistory.get(id)}});
-//             }
-//         }
-
-//         void remove(int id, T element){
-//             this->causalHistory.add(id);
-//             if(this->contains(element)){
-//                 this->addSet.erase(this->getElement(element));
-//             }
-//         }
-
-//         bool contains(T element){
-//             for(auto it = this->addSet.begin(); it != this->addSet.end(); it++){
-//                 if(it->first == element){
-//                     return true;
-//                 }
-//             }
-//             return false;
-//         }
-
-//         const pair<T, pair<int, int>>* getElement(T element) {
-//             for (auto it = this->addSet.begin(); it != this->addSet.end(); ++it) {
-//                 if (it->first == element) {
-//                     return &(*it);
-//                 }
-//             }
-//             return nullptr;
-//         }
-
-//         set<T> elements(){
-//             set<T> elements;
-//             for(auto it = this->addSet.begin(); it != this->addSet.end(); it++){
-//                 elements.insert(it->first);
-//             }
-//             return elements;
-//         }
-
-//         void merge(AddWinsAWSet<T> set){
-//             for(auto it = set.addSet.begin(); it != set.addSet.end(); it++){
-//                 if(this->contains(it->first)){
-//                     if(this->getElement(it->first)->second.second < it->second.second){
-//                         this->add(it->second.first, it->first);
-//                     }
-//                 }
-//                 else{
-//                     this->add(it->second.first, it->first);
-//                 }
-//             }
-//         }
-// };
+//     return 0;
+// }
