@@ -111,6 +111,9 @@ public:
       }
       else{
         new_shopping_list.items[item.first] = new_shopping_list.items[item.first].merge(item.second);
+        if (new_shopping_list.items[item.first].value() < 0){
+          new_shopping_list.items[item.first].reset();
+        }
       }
     }
     return new_shopping_list;
@@ -163,7 +166,8 @@ int main(){
   shopping_list_copy.set_user_id(user_id2);
   shopping_list_copy.add("orange");
   shopping_list_copy.add("apple", 2);
-  shopping_list_copy.add("banana", 2);
+  shopping_list_copy.add("banana", 20);
+  shopping_list_copy.decrease("banana", 21);
 
   shopping_list.decrease("apple");
   shopping_list.decrease("banana", 2);

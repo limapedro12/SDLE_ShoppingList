@@ -69,8 +69,6 @@ public:
                     max(val.second.second, other_pair->second.second)
                 };
                 new_counter.m[val.first] = pair;
-                // if(new_counter.value() < 0)
-                //     new_counter.m[val.first].second = pair.first;
             }
             else if (other.causalHistory < val.first){
                 new_counter.m[val.first] = val.second;
