@@ -1,6 +1,8 @@
 #include <map>;
+#include <set>;
 #include <iostream>;
 #include <numeric>;
+#include <algorithm>;
 #include "CausalHistories.cpp";
 
 using namespace std;
@@ -10,6 +12,7 @@ template <typename T>
 class CRDTCounter{
 private:
     int user_id;
+    // pair<user_id, context_num> pair<positive_counter, negative_counter>
     map<pair<int, int>, pair<unsigned, unsigned> m;
     CausalHistories causalHistory;
 
@@ -18,6 +21,10 @@ public:
         this->positive_counter = 0;
         this->negative_counter = 0;
         this->causalHistory = CausalHistories();
+    }
+
+    map<pair<int, int>, pair<unsigned, unsigned>> get_map(){
+        return m;
     }
 
     void set_user_id(int user_id){
@@ -33,11 +40,33 @@ public:
                       { return sum + p.second.first - p.second.second; });
     }
 
-    // TODO
     CRDTCounter merge(CRDTCounter other){
-        this->causalHistory.merge(other.causalHistory);
-        this->m.merge(other.m);
-        return *this;
+        CRDTCounter new_counter;
+        auto other_map = other.get_map();
+
+        for(auto val: m){
+            auto other_pair = other_map.find(val.first);
+            if (other_pair != other_map.end()){
+                pair<int, int> pair = {
+                    max(val.second.first, other_pair->second.first),
+                    max(val.second.second, other_pair->second.second)
+                }
+                new_counter.m[val.first] = pair;
+            }
+            else if (other.causalHistory < val.first){
+                new_counter.m[val.first] = val.second;
+            }
+        }
+
+        for (auto val : other_map){
+            if (m.find(val.first) == m.end() && causalHistory < val.first){
+                new_counter.m[val.first] = val.second;
+            }
+        }
+
+        new_counter.causalHistory = causalHistory.merge(other.causalHistory);
+
+        return new_counter;
     }
 
     void fresh(){

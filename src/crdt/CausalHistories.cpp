@@ -43,38 +43,21 @@ class CausalHistories {
     }
 
     CausalHistories merge(CausalHistories ch){
-        CausalHistories new_ch = *this;
-        auto my_it = new_ch.getMap().begin();
+        CausalHistories this_copy = *this;
+        auto my_it = this_copy.getMap().begin();
         auto ch_it = ch.getMap().begin();
 
-        // while(my_it != new_ch.getMap().end() && ch_it != ch.getMap().end()){
-        //     if (my_it->first == ch_it->first){
-        //         if (my_it->second < ch_it->second){
-        //             my_it->second = ch_it->second;
-        //         }
-        //         my_it++;
-        //         ch_it++;
-        //     } else if (my_it->first < ch_it->first){
-        //         my_it++;
-        //     } else {
-        //         new_ch.getMap().insert({ch_it->first, ch_it->second});
-        //         ch_it++;
-        //     }
-        // }
-
-        auto new_map = new_ch.getMap();
+        auto this_map = this_copy.getMap();
         auto ch_map = ch.getMap();
 
         for (auto val : ch_map){
-            cout << val.first << " " << val.second << endl;
-            if (new_map.find(val.first) == new_map.end()){
-                cout << "inserting " << val.first << " " << val.second << endl;
-                new_ch.set_value(val.first, val.second);
-            } else if (new_map[val.first] < val.second)
-                new_ch.set_value(val.first, val.second);
+            if (this_map.find(val.first) == this_map.end())
+                this_copy.set_value(val.first, val.second);
+            else if (this_map[val.first] < val.second)
+                this_copy.set_value(val.first, val.second);
         }
 
-        return new_ch;
+        return this_copy;
     }
 
     bool operator==(const CausalHistories &other) const{
@@ -104,6 +87,11 @@ class CausalHistories {
             } else
                 my_it++;
         }
+    }
+
+    bool operator<(pair<int, int> p) const{
+        return (causalHistory.find(p.first) == causalHistory.end()) || 
+               (causalHistory[p.first] < p.second);
     }
 
     CausalHistories copy(){
