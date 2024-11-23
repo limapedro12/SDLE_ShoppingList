@@ -70,6 +70,13 @@ public:
       items[item].reset();
   }
 
+  void set_value(string item, int value){
+    if (items.find(item) == items.end()){
+      return;
+    }
+    items[item].set_value(value, user_id);
+  }
+
   void reset(string item){
     if (items.find(item) == items.end()){
       return;
@@ -94,10 +101,14 @@ public:
   ShoppingList copy(){
     ShoppingList new_shopping_list(this->id);
     new_shopping_list.items = this->items;
-    for (auto &item : new_shopping_list.items){
+    this->fresh();
+    return new_shopping_list;
+  }
+
+  void fresh(){
+    for (auto &item : items){
       item.second.fresh(user_id);
     }
-    return new_shopping_list;
   }
 
   ShoppingList merge(ShoppingList other){

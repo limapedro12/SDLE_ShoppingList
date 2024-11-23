@@ -28,6 +28,14 @@ void decrease(ShoppingList& shopping_list){
     cout << "Decreased " << quantity << " " << item << " from the shopping list" << endl;
 }
 
+void set_value(ShoppingList &shopping_list){
+  string item;
+  int value;
+  cin >> value >> item;
+  shopping_list.set_value(item, value);
+  cout << "Set " << item << " to " << value << endl;
+}
+
 void reset(ShoppingList &shopping_list){
   string item;
   cin >> item;
@@ -69,19 +77,42 @@ void list(vector<ShoppingList> &shopping_lists){
     cout << "Id: " << shopping_list.get_id() << endl;
 }
 
+void create(vector<ShoppingList> &shopping_lists){
+  ShoppingList shopping_list(generate_id());
+  shopping_list.set_user_id(1);
+  shopping_lists.push_back(shopping_list);
+  cout << "Created a new shopping list" << endl;
+}
+
+void push(ShoppingList &shopping_list){
+  shopping_list.fresh();
+
+  // send to server
+
+  cout << "Push not implemented yet" << endl;
+}
+
+void pull(ShoppingList &shopping_list){
+  // receive from server
+  cout << "Pull not implemented yet" << endl;
+}
+
 
 int main(){
   vector<ShoppingList> shopping_lists;
   ShoppingList *current_shopping_list = nullptr;
   while(true){
+    if (current_shopping_list == nullptr)
+      cout << "> ";
+    else
+      cout << "[" << current_shopping_list->get_id() << "] > ";
     string command;
     cin >> command;
     if (command == "exit")
       break;
-    else if (command == "create"){
-      shopping_lists.push_back(ShoppingList(generate_id()));
-      cout << "Created a new shopping list" << endl;
-    } else if (command == "remove")
+    else if (command == "create")
+      create(shopping_lists);
+    else if (command == "remove")
       remove(shopping_lists);
     else if (command == "list")
       list(shopping_lists);
@@ -91,15 +122,46 @@ int main(){
     } 
     else if (command == "leave")
       current_shopping_list = nullptr;
-    else if (command == "add")
-      add(*current_shopping_list);
-    else if (command == "decrease")
-      decrease(*current_shopping_list);
-    else if (command == "reset")
-      reset(*current_shopping_list);
-    else if (command == "print")
-      cout << (*current_shopping_list).print() << endl;
-    else
+    else if (command == "add"){
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        add(*current_shopping_list);
+    } else if (command == "decrease"){
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        decrease(*current_shopping_list);
+    } else if (command == "set_value") {
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        set_value(*current_shopping_list);
+    } else if (command == "reset") {
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        reset(*current_shopping_list);
+    } else if (command == "print") {
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        cout << (*current_shopping_list).print() << endl;
+    } else if (command == "push")
+    {
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        push(*current_shopping_list);
+    }
+    else if (command == "pull")
+    {
+      if (current_shopping_list == nullptr)
+        cout << "No shopping list selected" << endl;
+      else
+        pull(*current_shopping_list);
+    } else {
       cout << "Invalid command" << endl;
+    }
   }
 }
