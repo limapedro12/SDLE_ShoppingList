@@ -1,25 +1,23 @@
-#include <map>;
-#include <set>;
-#include <iostream>;
-#include <numeric>;
-#include <algorithm>;
-#include "CausalHistories.cpp";
+#include <map>
+#include <set>
+#include <string>
+#include <iostream>
+#include <numeric>
+#include <algorithm>
+#include "CausalHistories.cpp"
 
 using namespace std;
-
-template <typename T>
 
 class CRDTCounter{
 private:
     int user_id;
     // pair<user_id, context_num> pair<positive_counter, negative_counter>
-    map<pair<int, int>, pair<unsigned, unsigned> m;
+    map<pair<int, int>, pair<unsigned, unsigned>> m;
     CausalHistories causalHistory;
 
 public:
     CRDTCounter(){
-        this->positive_counter = 0;
-        this->negative_counter = 0;
+        m = {};
         this->causalHistory = CausalHistories();
     }
 
@@ -36,8 +34,39 @@ public:
     }
 
     int value(){
-        return reduce(m.begin(), m.end(), 0, [](int sum, const auto &p)
-                      { return sum + p.second.first - p.second.second; });
+        return accumulate(m.begin(), m.end(), 0, [](int sum, const auto &p)
+                          { return sum + p.second.first - p.second.second; });
+
+        // iterative form
+        // int sum = 0;
+        // for (auto &p : m){
+        //     sum += p.second.first - p.second.second;
+        // }
+        // return sum;
+    }
+
+    void incr(){
+        this->update({1, 0});
+    }
+
+    void decr(){
+        this->update({0, 1});
+    }
+
+    void incr(int n){
+        this->update({n, 0});
+    }
+
+    void decr(int n){
+        this->update({0, n});
+    }
+
+    void set_value(int n){
+        int val = n - this->value();
+        if (val > 0)
+            this->incr(val);
+        else if (val < 0)
+            this->decr(-val);
     }
 
     CRDTCounter merge(CRDTCounter other){
@@ -50,7 +79,7 @@ public:
                 pair<int, int> pair = {
                     max(val.second.first, other_pair->second.first),
                     max(val.second.second, other_pair->second.second)
-                }
+                };
                 new_counter.m[val.first] = pair;
             }
             else if (other.causalHistory < val.first){
@@ -69,6 +98,13 @@ public:
         return new_counter;
     }
 
+    CRDTCounter copy(){
+        CRDTCounter new_counter;
+        new_counter.m = m;
+        new_counter.causalHistory = causalHistory.copy();
+        return new_counter;
+    }
+
     void fresh(){
         causalHistory.add(user_id);
         int contextNum = causalHistory.get(user_id);
@@ -76,14 +112,34 @@ public:
     }
 
     void update(pair<int, int> pair){
-        if (m.find({usei_id, causalHistory.get(user_id)}) == m.end())
+        if (m.find({user_id, causalHistory.get(user_id)}) == m.end())
             this->fresh();
         m[{user_id, causalHistory.get(user_id)}].first += pair.first;
         m[{user_id, causalHistory.get(user_id)}].second += pair.second;
     }
-}
+};
 
-typedef map<string, CRDTCounter> crdtMap OurCRDT;
+typedef map<string, CRDTCounter> CRDTCounterMap;
+
+int main(){
+    CRDTCounter counter;
+    counter.incr(2);
+
+    cout << counter.value() << endl;
+
+    CRDTCounter counter2 = counter.copy();
+    counter.fresh();
+
+    counter.incr(3);
+
+    counter2.reset();
+
+    cout << counter.value() << endl;
+    cout << counter2.value() << endl;
+    cout << counter.merge(counter2).value() << endl;
+
+    return 0;
+}
 
 //     public:
 

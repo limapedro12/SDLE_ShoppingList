@@ -91,16 +91,16 @@ class CausalHistories {
 
     bool operator<(pair<int, int> p) const{
         return (causalHistory.find(p.first) == causalHistory.end()) || 
-               (causalHistory[p.first] < p.second);
+               (causalHistory.find(p.first)->second < p.second);
     }
 
-    CausalHistories copy(){
+    CausalHistories copy() const{
         CausalHistories ch;
         ch.causalHistory = causalHistory;
         return ch;
     }
 
-    string print(){
+    string print() const{
         string s = "";
         for (auto it = causalHistory.begin(); it != causalHistory.end(); it++){
             s += to_string(it->first) + ":" + to_string(it->second) + " ";
@@ -110,29 +110,29 @@ class CausalHistories {
 };
 
 
-int main() {
-    CausalHistories ch1;
-    ch1.add(1);
-    ch1.add(2);
-    ch1.add(5);
+// int main() {
+//     CausalHistories ch1;
+//     ch1.add(1);
+//     ch1.add(2);
+//     ch1.add(5);
 
 
-    CausalHistories ch2;
-    ch2.add(1);
-    ch2.add(2);
-    ch2.add(3);
+//     CausalHistories ch2;
+//     ch2.add(1);
+//     ch2.add(2);
+//     ch2.add(3);
 
-    CausalHistories ch1_copy = ch1.copy();
-    ch1_copy.add(1);
+//     CausalHistories ch1_copy = ch1.copy();
+//     ch1_copy.add(1);
 
-    cout << ch1.print() << endl;
-    cout << ch1_copy.print() << endl;
-    cout << ch2.print() << endl;
+//     cout << ch1.print() << endl;
+//     cout << ch1_copy.print() << endl;
+//     cout << ch2.print() << endl;
 
-    cout << (bool)(ch1 == ch2) << endl;
-    cout << (bool)(ch2 < ch1) << endl;
+//     cout << (bool)(ch1 == ch2) << endl;
+//     cout << (bool)(ch2 < ch1) << endl;
 
-    CausalHistories ch3 = ch1.merge(ch2);
-    cout << ch3.print() << endl;
+//     CausalHistories ch3 = ch1.merge(ch2);
+//     cout << ch3.print() << endl;
 
-}
+// }
