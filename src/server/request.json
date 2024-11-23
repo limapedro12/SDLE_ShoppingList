@@ -1,9 +1,0 @@
-{
-    "operation": "create",
-    "id": "12",
-    "data": {
-        "apple": 5,
-        "banana": 10,
-        "orange": 3
-    }
-}
