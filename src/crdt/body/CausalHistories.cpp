@@ -98,6 +98,13 @@ string CausalHistories::print() const{
     return s;
 }
 
+json CausalHistories::toJSON(){
+    return causalHistory;
+}
+
+CausalHistories::CausalHistories(json j){
+    causalHistory = j;
+}
 
 // int main() {
 //     CausalHistories ch1;

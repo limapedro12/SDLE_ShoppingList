@@ -1,8 +1,10 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include "../../libs/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 class CausalHistories {
 
@@ -16,6 +18,9 @@ class CausalHistories {
 
     // Constructor
     CausalHistories();
+
+    // Constructor from  json
+    CausalHistories(json j);
 
     // add one event to the causal history in user id
     void add(string id);
@@ -43,4 +48,7 @@ class CausalHistories {
 
     // represent the causal history as a string
     string print() const;
+
+    // return teh equivalent json object
+    json toJSON();
 };

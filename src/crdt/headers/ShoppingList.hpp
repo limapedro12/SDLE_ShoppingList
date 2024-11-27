@@ -1,7 +1,11 @@
 #include "string"
 #include "set"
 #include "map"
+#include "../../libs/json.hpp"
 #include "Counter.hpp"
+
+using namespace std;
+using json = nlohmann::json;
 
 class ShoppingList{
 private:
@@ -11,6 +15,8 @@ private:
 
 public:
   ShoppingList(string id);
+
+  ShoppingList(string id, json j);
 
   void setUserId(string user_id);
 
@@ -47,4 +53,7 @@ public:
   string get_id();
 
   string print();
+
+  json contentsToJSON();
+
 };

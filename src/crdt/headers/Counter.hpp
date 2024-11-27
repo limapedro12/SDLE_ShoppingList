@@ -4,9 +4,11 @@
 #include <iostream>
 #include <numeric>
 #include <algorithm>
+#include "../../libs/json.hpp"
 #include "CausalHistories.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 class CRDTCounter{
 private:
@@ -16,6 +18,8 @@ private:
 
 public:
     CRDTCounter();
+
+    CRDTCounter(json j);
 
     map<pair<string, int>, pair<unsigned, unsigned>> get_map();
 
@@ -42,6 +46,8 @@ public:
     void update(pair<int, int> pair, string user_id);
 
     CausalHistories get_causal_history();
+
+    json toJSON();
 };
 
 typedef map<string, CRDTCounter> CRDTCounterMap;

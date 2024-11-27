@@ -98,6 +98,17 @@ CausalHistories CRDTCounter::get_causal_history(){
     return causalHistory;
 }
 
+json CRDTCounter::toJSON(){
+    json json;
+    json["causalHistory"] = causalHistory.toJSON();
+    json["counter"] = m;
+    return json;
+}
+
+CRDTCounter::CRDTCounter(json j){
+    causalHistory = CausalHistories(j["causalHistory"]);
+    m = j["counter"];
+}
 
 // int main(){
 //     int user_id = 1;

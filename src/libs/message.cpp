@@ -17,25 +17,10 @@ Message::Message(std::string json){
 Message::Message(ShoppingList shoppingList, std::string operation){
     this->operation = operation;
     this->id = shoppingList.get_id();
-    this->data = CRDTCounterMapToJSON(shoppingList.get_items_with_counter());
+    this->data = shoppingList.contentsToJSON();
     this->json["operation"] = operation;
     this->json["id"] = this->id;
     this->json["data"] = this->data;
-}
-
-nlohmann::json Message::CRDTCounterMapToJSON(CRDTCounterMap items){
-    nlohmann::json json;
-    for (auto item : items){
-        json[item.first] = CRDTCounterToJSON(item.second);
-    }
-    return json;
-}
-
-nlohmann::json Message::CRDTCounterToJSON(CRDTCounter counter){
-    nlohmann::json json;
-    json["causalHistory"] = counter.get_causal_history().getMap();
-    json["counter"] = counter.get_map();
-    return json;
 }
 
 Message::Message(std::string operation, std::string id, std::unordered_map <std::string, int> data){

@@ -153,6 +153,23 @@ CRDTCounterMap ShoppingList::get_items_with_counter(){
   return this->items;
 }
 
+json ShoppingList::contentsToJSON(){
+  nlohmann::json json;
+  for (auto item : items){
+        json[item.first] = item.second.toJSON();
+  }
+  return json;
+}
+
+ShoppingList::ShoppingList(string id, json j){
+  this->id = id;
+  this->items = CRDTCounterMap();
+  for (auto item : j.items())
+  {
+    this->items[item.key()] = CRDTCounter(item.value());
+  }
+}
+
 // int main(){
 //   string user_id = "1";
 //   string user_id2 = "2";
