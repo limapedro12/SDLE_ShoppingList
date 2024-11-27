@@ -7,14 +7,14 @@ class ShoppingList{
 private:
   CRDTCounterMap items;
   string id;
-  int user_id = 0;
+  string user_id = "";
 
 public:
   ShoppingList(string id);
 
-  void set_user_id(int user_id);
+  void setUserId(string user_id);
 
-  void reset_user_id();
+  void resetUserId();
 
   void add(string item);
 

@@ -8,7 +8,7 @@ CRDTCounter::CRDTCounter(){
     this->causalHistory = CausalHistories();
 }
 
-map<pair<int, int>, pair<unsigned, unsigned>> CRDTCounter::get_map(){
+map<pair<string, int>, pair<unsigned, unsigned>> CRDTCounter::get_map(){
     return m;
 }
 
@@ -21,23 +21,23 @@ int CRDTCounter::value(){
                         { return sum + p.second.first - p.second.second; });
 }
 
-void CRDTCounter::incr(int user_id){
+void CRDTCounter::incr(string user_id){
     this->update({1, 0}, user_id);
 }
 
-void CRDTCounter::decr(int user_id){
+void CRDTCounter::decr(string user_id){
     this->update({0, 1}, user_id);
 }
 
-void CRDTCounter::incr(int n, int user_id){
+void CRDTCounter::incr(int n, string user_id){
     this->update({n, 0}, user_id);
 }
 
-void CRDTCounter::decr(int n, int user_id){
+void CRDTCounter::decr(int n, string user_id){
     this->update({0, n}, user_id);
 }
 
-void CRDTCounter::set_value(int n, int user_id){
+void CRDTCounter::set_value(int n, string user_id){
     int val = n - this->value();
     if (val > 0)
         this->incr(val, user_id);
@@ -81,13 +81,13 @@ CRDTCounter CRDTCounter::copy(){
     return new_counter;
 }
 
-void CRDTCounter::fresh(int user_id){
+void CRDTCounter::fresh(string user_id){
     causalHistory.add(user_id);
     int contextNum = causalHistory.get(user_id);
     m[{user_id, contextNum}] = {0, 0};
 }
 
-void CRDTCounter::update(pair<int, int> pair, int user_id){
+void CRDTCounter::update(pair<int, int> pair, string user_id){
     if (m.find({user_id, causalHistory.get(user_id)}) == m.end())
         this->fresh(user_id);
     m[{user_id, causalHistory.get(user_id)}].first += pair.first;

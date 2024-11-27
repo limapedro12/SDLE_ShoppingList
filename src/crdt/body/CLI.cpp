@@ -76,7 +76,7 @@ void list(vector<ShoppingList> &shopping_lists){
 
 void create(vector<ShoppingList> &shopping_lists){
   ShoppingList shopping_list(generate_id());
-  shopping_list.set_user_id(1);
+  shopping_list.setUserId("1");
   shopping_lists.push_back(shopping_list);
   cout << "Created a new shopping list" << endl;
 }

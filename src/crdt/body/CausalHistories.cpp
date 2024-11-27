@@ -93,7 +93,7 @@ CausalHistories CausalHistories::copy() const{
 string CausalHistories::print() const{
     string s = "";
     for (auto it = causalHistory.begin(); it != causalHistory.end(); it++){
-        s += to_string(it->first) + ":" + to_string(it->second) + " ";
+        s += it->first + ":" + to_string(it->second) + " ";
     }
     return s;
 }
