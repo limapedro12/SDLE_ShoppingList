@@ -2,12 +2,24 @@
 #include <vector>
 #include <unordered_map>
 #include "json.hpp"
+#include "../crdt/headers/ShoppingList.hpp"
+
+enum Operation {
+    HELLO_WORLD,
+    CREATE,
+    GET,
+    MERGE,
+    ERASE
+};
 
 class Message{
     public:
         Message(nlohmann::json json);
         Message(std::string json);
         Message(std::string operation, std::string id, std::unordered_map <std::string, int> data);
+        Message(ShoppingList shoppingList, std::string operation);
+        nlohmann::json CRDTCounterMapToJSON(CRDTCounterMap items);
+        nlohmann::json CRDTCounterToJSON(CRDTCounter counter);
         ~Message();
         std::string getOperation();
         std::string getId();
@@ -22,6 +34,6 @@ class Message{
     private:
         std::string operation;
         std::string id;
-        std::unordered_map <std::string, int> data;
+        nlohmann::json data;
         nlohmann::json json;
 };

@@ -40,6 +40,8 @@ public:
     void fresh(int user_id);
 
     void update(pair<int, int> pair, int user_id);
+
+    CausalHistories get_causal_history();
 };
 
 typedef map<string, CRDTCounter> CRDTCounterMap;

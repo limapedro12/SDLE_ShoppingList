@@ -94,6 +94,10 @@ void CRDTCounter::update(pair<int, int> pair, int user_id){
     m[{user_id, causalHistory.get(user_id)}].second += pair.second;
 }
 
+CausalHistories CRDTCounter::get_causal_history(){
+    return causalHistory;
+}
+
 
 // int main(){
 //     int user_id = 1;

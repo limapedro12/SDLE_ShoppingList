@@ -149,6 +149,10 @@ string ShoppingList::print(){
   return output;
 }
 
+CRDTCounterMap ShoppingList::get_items_with_counter(){
+  return this->items;
+}
+
 // int main(){
 //   int user_id = 1;
 //   int user_id2 = 2;

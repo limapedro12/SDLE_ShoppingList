@@ -9,15 +9,8 @@
 Message handleMessage(Message received){
     std::unordered_map<std::string, int> data = {};
     std::string operation = received.getOperation(); // its worth looking into an enum (do those even exist in c++?)º
+    switch ()
     if (operation == "helloWorld"){
-        // the json gets parsed into a map, but you can also just use the json object as a map, this may be more efficient however
-        for (auto const& x : received.getData())
-        {
-            std::cout << x.first  // string (key)
-                      << ':'
-                      << x.second // string's value 
-                      << std::endl ;
-        }
         data = {{"Here", 1}, {"Is", 2}, {"Data", 3}};
         return Message(received.getOperation(), received.getId(), data);
     } else {

@@ -95,7 +95,7 @@ void pull(ShoppingList &shopping_list){
 }
 
 
-int main(){
+int terminal(){
   vector<ShoppingList> shopping_lists;
   ShoppingList *current_shopping_list = nullptr;
   while(true){

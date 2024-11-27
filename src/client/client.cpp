@@ -13,8 +13,18 @@ int main() {
 
     for (int request_nbr = 0; request_nbr < 10; ++request_nbr) {
         // Create the message object
-        std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
-        Message message("helloWorld", "mrBombastic2", data);
+        //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
+        //Message message("helloWorld", "mrBombastic2", data);
+        ShoppingList shopping_list("1");
+        shopping_list.set_user_id(1);
+        shopping_list.add("apple");
+        shopping_list.add("banana");
+        shopping_list.add("apple", 3);
+
+        shopping_list.fresh();
+        shopping_list.add("apple", 2);
+        Message message(shopping_list, "helloWorld");
+
 
         // Serialize the message into a string and send it
         s_send(socket, message.toString());

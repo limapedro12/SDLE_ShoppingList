@@ -41,6 +41,8 @@ public:
   set<string> get_items();
 
   map<string, int> get_items_with_quantity();
+
+  CRDTCounterMap get_items_with_counter();
   
   string get_id();
 
