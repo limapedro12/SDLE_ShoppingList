@@ -11,7 +11,7 @@ using namespace std;
 void createShoppingList(json request);
 void getShoppingList(json request);
 void eraseShoppingList(json request);
-void updateShoppingList(const std::string& id, const std::string& item, int quantity);
+void mergeShoppingList(json request);
 
 // MD5 encrypter for hashing
 md5 encrypter;
@@ -21,7 +21,7 @@ int main() {
          << "1. Create a shopping list" << endl
          << "2. Get a shopping list" << endl
          << "3. Erase a shopping list" << endl
-         << "4. Update shopping list" << endl;
+         << "4. Merge shopping list" << endl;
     int option;
     cin >> option;
     cout << endl;
@@ -49,6 +49,13 @@ int main() {
         file >> request;
         file.close();
         eraseShoppingList(request);
+        break;
+    }
+    case 4: {
+        file.open("mergeRequest.json");
+        file >> request;
+        file.close();
+        mergeShoppingList(request);
         break;
     }
     default:
@@ -106,5 +113,28 @@ void eraseShoppingList(json request) {
         cout << "Shopping list erased successfully" << endl;
     } else {
         cout << "Failed to erase the file. Ensure the unique ID is correct." << endl;
+    }
+}
+
+void mergeShoppingList(json request) {
+    string path = "../lists/" + request["id"].get<string>() + ".json";
+    ifstream file(path);
+
+    if (file.is_open()) {
+        json list;
+        file >> list;
+        file.close();
+
+        for (auto& item : request["data"].items()) {
+            list["data"][item.key()] = item.value();
+        }
+
+        ofstream new_file(path);
+        new_file << list.dump(4);
+        new_file.close();
+
+        cout << "Shopping list updated successfully" << endl;
+    } else {
+        cout << "Failed to open the file. Ensure the unique ID is correct." << endl;
     }
 }
