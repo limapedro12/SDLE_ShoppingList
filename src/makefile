@@ -6,13 +6,13 @@ CXXFLAGS = -g
 all: client server broker
 
 client:
-	$(CXX) $(CXXFLAGS) ./client/client.cpp ./libs/message.cpp -o clientt -lzmq
+	$(CXX) $(CXXFLAGS) ./client/client.cpp ./libs/message.cpp -o client.out -lzmq
 
 server:
-	$(CXX) $(CXXFLAGS) ./server/server.cpp ./libs/message.cpp -o serverr -lzmq
+	$(CXX) $(CXXFLAGS) ./server/server.cpp ./libs/message.cpp -o server.out -lzmq
 
 broker:
-	$(CXX) $(CXXFLAGS) ./server/broker.cpp ./libs/message.cpp -o broker -lzmq
+	$(CXX) $(CXXFLAGS) ./server/broker.cpp ./libs/message.cpp -o broker.out -lzmq
 
 clean:
-	rm -f clientt serverr broker
+	rm -f *.out
