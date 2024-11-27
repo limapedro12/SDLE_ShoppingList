@@ -57,10 +57,8 @@ void createShoppingList(json request) {
     int counter = 1;
     //try to open the list with the id = hashed_id from the json + hashed counter
     std::cout << request["id"] << std::endl;
-    std::cout << "Creating shopping list" << std::endl;
     string hashed_id = encrypter.encrypt(request["id"].get<string>() + to_string(counter));
     string path = "../lists/" + hashed_id + ".json";
-    std::cout << "Creating shopping list" << std::endl;
     ifstream file(path);
 
     while (file.is_open()) {

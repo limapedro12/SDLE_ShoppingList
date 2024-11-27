@@ -6,6 +6,9 @@
 using namespace std;
 using json = nlohmann::json;
 
+#ifndef CAUSALHISTORIES_H
+#define CAUSALHISTORIES_H
+
 class CausalHistories {
 
     private:
@@ -52,3 +55,5 @@ class CausalHistories {
     // return teh equivalent json object
     json toJSON();
 };
+
+#endif

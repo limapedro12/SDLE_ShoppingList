@@ -7,6 +7,9 @@
 using namespace std;
 using json = nlohmann::json;
 
+#ifndef SHOPPINGLIST_H
+#define SHOPPINGLIST_H
+
 class ShoppingList{
 private:
   CRDTCounterMap items;
@@ -57,3 +60,5 @@ public:
   json contentsToJSON();
 
 };
+
+#endif

@@ -10,6 +10,9 @@
 using namespace std;
 using json = nlohmann::json;
 
+#ifndef COUNTER_H
+#define COUNTER_H
+
 class CRDTCounter{
 private:
     // pair<user_id, context_num> pair<positive_counter, negative_counter>
@@ -51,3 +54,5 @@ public:
 };
 
 typedef map<string, CRDTCounter> CRDTCounterMap;
+
+#endif

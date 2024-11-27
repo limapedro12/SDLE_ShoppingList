@@ -1,5 +1,6 @@
 #include "../libs/zhelpers.hpp"
 #include "../libs/message.h"
+#include "../crdt/headers/ShoppingList.hpp"
 #include <string>
 #include <iostream>
 #include "handler.hpp"
@@ -58,6 +59,9 @@ int main (void)
         // Parse received message
         //Message received(string);
         nlohmann::json json = nlohmann::json::parse(received);
+
+        ShoppingList shoppingList(json["id"], json["data"]);
+        cout << "Shopping list: " << shoppingList.print() << endl;
 
         // Build a reply message
         Message reply = handleMessage(json);
