@@ -56,16 +56,13 @@ int main1() {
 void createShoppingList(json request) {
     int counter = 1;
     //try to open the list with the id = hashed_id from the json + hashed counter
-    std::cout << request["id"] << std::endl;
-    string hashed_id = encrypter.encrypt(request["id"].get<string>() + to_string(counter));
-    string path = "../lists/" + hashed_id + ".json";
+    string path = "lists/" + request["id"].get<string>() + ".json";
     ifstream file(path);
 
     while (file.is_open()) {
         file.close();
         counter++;
-        hashed_id = encrypter.encrypt(request["id"].get<string>() + to_string(counter));
-        path = "../lists/" + hashed_id + ".json";
+        path = "lists/" + request["id"].get<string>() + ".json";
         file.open(path);
     }
 
@@ -78,11 +75,11 @@ void createShoppingList(json request) {
     new_file << list.dump(4);
     new_file.close();
 
-    cout << "Shopping list created with unique ID: " << hashed_id << endl;
+    cout << "Shopping list created with unique ID: " << request["id"].get<string>() << endl;
 }
 
 void getShoppingList(json request) {
-    string path = "../lists/" + request["id"].get<string>() + ".json";
+    string path = "lists/" + request["id"].get<string>() + ".json";
     ifstream file(path);
 
     if (file.is_open()) {
@@ -96,7 +93,7 @@ void getShoppingList(json request) {
 }
 
 void eraseShoppingList(json request) {
-    string path = "../lists/" + request["id"].get<string>() + ".json";
+    string path = "lists/" + request["id"].get<string>() + ".json";
     if (remove(path.c_str()) == 0) {
         cout << "Shopping list erased successfully" << endl;
     } else {
@@ -105,7 +102,7 @@ void eraseShoppingList(json request) {
 }
 
 void mergeShoppingList(json request) {
-    string path = "../lists/" + request["id"].get<string>() + ".json";
+    string path = "lists/" + request["id"].get<string>() + ".json";
     ifstream file(path);
 
     if (file.is_open()) {

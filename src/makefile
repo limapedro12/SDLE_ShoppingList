@@ -8,7 +8,7 @@ all: client server broker
 libs = ./libs/message.cpp ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp
 
 client:
-	$(CXX) $(CXXFLAGS) ./client/client.cpp $(libs) -o client.out -lzmq
+	$(CXX) $(CXXFLAGS) ./client/client.cpp $(libs) -o client.out -lzmq -lssl -lcrypto
 
 server:
 	$(CXX) $(CXXFLAGS) ./server/server.cpp $(libs) ./server/handler.cpp ./server/md5.cpp -o server.out -lzmq -lssl -lcrypto
