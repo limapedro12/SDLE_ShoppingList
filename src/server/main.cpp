@@ -1,29 +1,140 @@
-#include "Server.cpp"
 #include <iostream>
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <string>
 #include "md5.cpp"
 
+using json = nlohmann::json;
+using namespace std;
+
+// Function declarations
+void createShoppingList(json request);
+void getShoppingList(json request);
+void eraseShoppingList(json request);
+void mergeShoppingList(json request);
+
+// MD5 encrypter for hashing
+md5 encrypter;
+
 int main() {
-    Server server;
-    md5 encrypter;
-    std::cout << "Insert user id: ";
-    int id;
-    std::cin >> id;
+    cout << "Choose an option: " << endl
+         << "1. Create a shopping list" << endl
+         << "2. Get a shopping list" << endl
+         << "3. Erase a shopping list" << endl
+         << "4. Merge shopping list" << endl;
+    int option;
+    cin >> option;
+    cout << endl;
 
-    // Encrypt the ID and use the resulting hash as a string
-    std::string hashed_id = encrypter.encrypt(std::to_string(id));
-    std::cout << "Hashed user id: " << hashed_id << std::endl;
+    json request;
+    ifstream file;
 
-    server.getShoppingList(hashed_id);
-
-    std::cout << "Insert item to add to the list: ";
-    std::string item;
-    std::cin >> item;
-
-    std::cout << "Insert quantity: ";
-    int quantity;
-    std::cin >> quantity;
-
-    server.updateShoppingList(hashed_id, item, quantity);
+    switch (option)
+    {
+    case 1:
+        file.open("createRequest.json");
+        file >> request;
+        file.close();
+        createShoppingList(request);
+        break;
+    case 2: {
+        file.open("getRequest.json");
+        file >> request;
+        file.close();
+        getShoppingList(request);
+        break;
+    }
+    case 3: {
+        file.open("eraseRequest.json");
+        file >> request;
+        file.close();
+        eraseShoppingList(request);
+        break;
+    }
+    case 4: {
+        file.open("mergeRequest.json");
+        file >> request;
+        file.close();
+        mergeShoppingList(request);
+        break;
+    }
+    default:
+        cout << "Invalid option" << endl;
+        break;
+    }
 
     return 0;
+}
+
+void createShoppingList(json request) {
+    int counter = 1;
+    //try to open the list with the id = hashed_id from the json + hashed counter
+    string hashed_id = encrypter.encrypt(request["id"].get<string>() + to_string(counter));
+    string path = "../lists/" + hashed_id + ".json";
+    ifstream file(path);
+
+    while (file.is_open()) {
+        file.close();
+        counter++;
+        hashed_id = encrypter.encrypt(request["id"].get<string>() + to_string(counter));
+        path = "../lists/" + hashed_id + ".json";
+        file.open(path);
+    }
+
+    json list = {
+        {"id", request["id"]},
+        {"data", json::object()}
+    };
+
+    ofstream new_file(path);
+    new_file << list.dump(4);
+    new_file.close();
+
+    cout << "Shopping list created with unique ID: " << hashed_id << endl;
+}
+
+void getShoppingList(json request) {
+    string path = "../lists/" + request["id"].get<string>() + ".json";
+    ifstream file(path);
+
+    if (file.is_open()) {
+        json list;
+        file >> list;
+        cout << "Shopping list: " << list.dump(4) << endl;
+        file.close();
+    } else {
+        cout << "Failed to open the file. Ensure the unique ID is correct." << endl;
+    }
+}
+
+void eraseShoppingList(json request) {
+    string path = "../lists/" + request["id"].get<string>() + ".json";
+    if (remove(path.c_str()) == 0) {
+        cout << "Shopping list erased successfully" << endl;
+    } else {
+        cout << "Failed to erase the file. Ensure the unique ID is correct." << endl;
+    }
+}
+
+void mergeShoppingList(json request) {
+    string path = "../lists/" + request["id"].get<string>() + ".json";
+    ifstream file(path);
+
+    if (file.is_open()) {
+        json list;
+        file >> list;
+        file.close();
+
+        for (auto& item : request["data"].items()) {
+            list["data"][item.key()] = item.value();
+        }
+
+        ofstream new_file(path);
+        new_file << list.dump(4);
+        new_file.close();
+
+        cout << "Shopping list updated successfully" << endl;
+    } else {
+        cout << "Failed to open the file. Ensure the unique ID is correct." << endl;
+    }
 }
