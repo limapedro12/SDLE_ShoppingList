@@ -159,6 +159,7 @@ CRDTCounterMap ShoppingList::get_items_with_counter(){
 //   ShoppingList shopping_list("1");
 //   shopping_list.set_user_id(user_id);
 
+//   cout << "Original shopping list: " << endl;
 //   shopping_list.add("apple");
 //   shopping_list.add("banana");
 //   shopping_list.add("apple", 3);
@@ -176,8 +177,16 @@ CRDTCounterMap ShoppingList::get_items_with_counter(){
 //   shopping_list.decrease("apple");
 //   shopping_list.decrease("banana", 2);
 
-//   cout << shopping_list.print() << endl;
-//   cout << shopping_list_copy.print() << endl;
-//   cout << shopping_list.merge(shopping_list_copy).print() << endl;
+//   cout << "Shopping list after user 1:" << endl;
+//   cout << shopping_list.print() << endl
+//        << endl;
+
+//   cout << "Shopping list after user 2:" << endl;
+//   cout << shopping_list_copy.print() << endl
+//        << endl;
+
+//   cout << "Merged shopping list:" << endl;
+//   cout << shopping_list.merge(shopping_list_copy).print() << endl
+//        << endl;
 
 // }

@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -g
 
-.PHONY: all client server broker clean
+.PHONY: all client server broker clean crdt
 
 all: client server broker
 
@@ -15,6 +15,9 @@ server:
 
 broker:
 	$(CXX) $(CXXFLAGS) ./server/broker.cpp $(libs) -o broker.out -lzmq
+
+crdt:
+	$(CXX) $(CXXFLAGS) ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp -o crdt.out -lzmq
 
 clean:
 	rm -f *.out
