@@ -1,0 +1,16 @@
+[
+    {
+    "data":{
+        "apple":{
+            "causalHistory":[[1,1]],
+            "counter":[[[1,1],[4,0]]]
+        },
+        "banana":{
+            "causalHistory":[[1,1]],
+            "counter":[[[1,1],[1,0]]]
+        }
+    },
+    "id":"1",
+    "operation":"helloWorld"
+    }
+]

@@ -11,7 +11,7 @@ client:
 	$(CXX) $(CXXFLAGS) ./client/client.cpp $(libs) -o client.out -lzmq
 
 server:
-	$(CXX) $(CXXFLAGS) ./server/server.cpp $(libs) -o server.out -lzmq
+	$(CXX) $(CXXFLAGS) ./server/server.cpp $(libs) ./server/handler.cpp ./server/md5.cpp -o server.out -lzmq -lssl -lcrypto
 
 broker:
 	$(CXX) $(CXXFLAGS) ./server/broker.cpp $(libs) -o broker.out -lzmq

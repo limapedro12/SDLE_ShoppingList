@@ -2,21 +2,44 @@
 #include "../libs/message.h"
 #include <string>
 #include <iostream>
+#include "handler.hpp"
 
 /**
  * @brief Handle the received message
  */
-Message handleMessage(Message received){
+Message handleMessage(nlohmann::json received){
     std::unordered_map<std::string, int> data = {};
-    std::string operation = received.getOperation(); // its worth looking into an enum (do those even exist in c++?)º
-    switch ()
+    std::string operation = received["operation"]; // its worth looking into an enum (do those even exist in c++?)
+    std::string id = received["id"];
     if (operation == "helloWorld"){
         data = {{"Here", 1}, {"Is", 2}, {"Data", 3}};
-        return Message(received.getOperation(), received.getId(), data);
-    } else {
+        return Message(operation, id, data);
+    }
+    else if (operation == "create"){
+        std::cout << "Creating shopping list" << std::endl;
+        createShoppingList(received);
+        data = {{"Success", 1}};
+        return Message("create", id, data);
+    }
+    else if (operation == "get"){
+        getShoppingList(received);
+        data = {{"Success", 1}};
+        return Message("get", id, data);
+    }
+    else if (operation == "erase"){
+        eraseShoppingList(received);
+        data = {{"Success", 1}};
+        return Message("erase", id, data);
+    }
+    else if (operation == "merge"){
+        mergeShoppingList(received);
+        data = {{"Success", 1}};
+        return Message("merge", id, data);
+    } 
+    else {
         std::cout << "Error: Operation requested not handleable" << std::endl;
         data = {{"Error", 1}};
-        return Message("error", received.getId(), data);
+        return Message("error", id, data);
     }
 }
 
@@ -29,17 +52,15 @@ int main (void)
 
     while (1) {
         //  Wait for next request from client
-        std::string string = s_recv (socket);
-        std::cout << "Received request: [" << string << "]" << std::endl;
+        std::string received = s_recv (socket);
+        std::cout << "Received request: [" << received << "]" << std::endl;
 
         // Parse received message
-        Message received(string);
-
-        //  Do some 'work'
-        sleep (1);
+        //Message received(string);
+        nlohmann::json json = nlohmann::json::parse(received);
 
         // Build a reply message
-        Message reply = handleMessage(received);
+        Message reply = handleMessage(json);
 
         //  Send reply back to client
         s_send (socket, reply.toString());

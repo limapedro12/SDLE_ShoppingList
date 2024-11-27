@@ -11,6 +11,14 @@ int main() {
 
     socket.connect("tcp://localhost:5559");
 
+    // create list
+    Message creation("create", "1", {});
+    s_send(socket, creation.toString());
+
+    std::string reply_str = s_recv(socket);
+
+    std::cout << "Received reply :" << " [" << reply_str << "]" << std::endl;
+
     for (int request_nbr = 0; request_nbr < 10; ++request_nbr) {
         // Create the message object
         //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
@@ -19,11 +27,11 @@ int main() {
         shopping_list.set_user_id(1);
         shopping_list.add("apple");
         shopping_list.add("banana");
-        shopping_list.add("apple", 3);
+        shopping_list.add("apple", request_nbr);
 
         shopping_list.fresh();
         shopping_list.add("apple", 2);
-        Message message(shopping_list, "helloWorld");
+        Message message(shopping_list, "merge");
 
 
         // Serialize the message into a string and send it

@@ -1,22 +1,9 @@
-#include <iostream>
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include <string>
-#include "md5.cpp"
-
-using json = nlohmann::json;
-using namespace std;
-
-// Function declarations
-void createShoppingList(json request);
-void getShoppingList(json request);
-void eraseShoppingList(json request);
-void mergeShoppingList(json request);
+#include "handler.hpp"
 
 // MD5 encrypter for hashing
 md5 encrypter;
 
-int main() {
+int main1() {
     cout << "Choose an option: " << endl
          << "1. Create a shopping list" << endl
          << "2. Get a shopping list" << endl
@@ -69,8 +56,11 @@ int main() {
 void createShoppingList(json request) {
     int counter = 1;
     //try to open the list with the id = hashed_id from the json + hashed counter
+    std::cout << request["id"] << std::endl;
+    std::cout << "Creating shopping list" << std::endl;
     string hashed_id = encrypter.encrypt(request["id"].get<string>() + to_string(counter));
     string path = "../lists/" + hashed_id + ".json";
+    std::cout << "Creating shopping list" << std::endl;
     ifstream file(path);
 
     while (file.is_open()) {
