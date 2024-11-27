@@ -1,4 +1,5 @@
 #include <map>
+#include <string>
 #include <iostream>
 
 using namespace std;
@@ -7,9 +8,9 @@ class CausalHistories {
 
     private:
 
-    map<int, int> causalHistory;
+    map<string, int> causalHistory;
 
-    void set_value(int id, int value);
+    void set_value(string id, int value);
 
     public:
 
@@ -17,13 +18,13 @@ class CausalHistories {
     CausalHistories();
 
     // add one event to the causal history in user id
-    void add(int id);
+    void add(string id);
 
     // get the value of the causal history in user id
-    int get(int id);
+    int get(string id);
 
     // get full map of the causal history
-    map<int, int> getMap();
+    map<string, int> getMap();
 
     // merge two causal histories
     CausalHistories merge(CausalHistories ch);
@@ -35,7 +36,7 @@ class CausalHistories {
     bool operator<(CausalHistories ch) const;
 
     // check if one pair user id and event number happpens after the current causal history
-    bool operator<(pair<int, int> p) const;
+    bool operator<(pair<string, int> p) const;
 
     // copy the causal history
     CausalHistories copy() const;
