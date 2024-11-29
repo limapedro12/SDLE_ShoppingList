@@ -110,15 +110,32 @@ void mergeShoppingList(json request) {
         file >> list;
         file.close();
 
-        for (auto& item : request["data"].items()) {
-            list["data"][item.key()] = item.value();
-        }
+        cout << "Aqui" << endl;
+
+        cout << "List: " << list["id"] << ", " << list["data"] << endl;
+
+        ShoppingList oldList(list["id"], list["data"]);
+        ShoppingList newList(request["id"], request["data"]);
+        
+        cout << "Aqui2" << endl;
+
+        ShoppingList listToKeep = oldList.merge(newList);
+        json listToKeepInJson;
+        listToKeepInJson["id"] = listToKeep.get_id();
+        listToKeepInJson["data"] = listToKeep.contentsToJSON();
+
+        // for (auto& item : request["data"].items()) {
+        //     list["data"][item.key()] = item.value();
+        // }
+        cout << "Aqui3" << endl;
 
         ofstream new_file(path);
-        new_file << list.dump(4);
+        new_file << listToKeepInJson.dump(4);
         new_file.close();
 
         cout << "Shopping list updated successfully" << endl;
+
+        cout << "Aqui4" << endl;
     } else {
         cout << "Failed to open the file. Ensure the unique ID is correct." << endl;
     }

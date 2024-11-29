@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "../libs/json.hpp"
+#include "../crdt/headers/ShoppingList.hpp"
 #include "md5.cpp"
 
 using json = nlohmann::json;
