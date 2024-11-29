@@ -14,10 +14,51 @@ int main() {
 
     socket.connect("tcp://localhost:5559");
 
-    std::string hashed_id = encrypter1.encrypt("1");
+    // check if there is a info.json file in the client dir, if there is not, create one and put hashed id in it, else read the hashed id from the file
+
+    std::string user_id;
+    std::ifstream file2("server/number.json");
+    json j;
+    file2 >> j;
+    file2.close();
+
+    std::ifstream file("client/info.json");
+    if (!file.good()) {
+        std::ofstream file("client/info.json");
+        // check the number.json file in the server directory and get the value of the number key, hash it to use as the hashed id and increment the number value by 1
+        int number = j["number"];
+        j["number"] = number + 1;
+        user_id = encrypter1.encrypt(std::to_string(number));
+        // write the user id to the info.json file with the key user_id
+        json user_id_json = {{"user_id", user_id}};
+        file << user_id_json;
+        file.close();
+        json new_user = {{user_id, 1}};
+        j["user_numbers"].push_back(new_user);
+        
+    } else {
+        json j;
+        file >> j;
+        user_id = j["user_id"];
+        file.close();
+    }
 
     // create list
-    Message creation("create", hashed_id, {});
+
+    int value;
+
+    for (auto& user : j["user_numbers"]) { // Use auto& to allow modification
+        if (user.contains(user_id)) {
+            value = user.at(user_id);
+            user[user_id] = value + 1; // Correct syntax for updating the value
+            break;
+        }
+    }   
+
+    std::string unhashed_list = user_id + "-" + std::to_string(value);
+    std::string list_id = encrypter1.encrypt(unhashed_list);
+
+    Message creation("create", list_id, {});
     s_send(socket, creation.toString());
 
     std::string reply_str = s_recv(socket);
@@ -28,8 +69,8 @@ int main() {
         // Create the message object
         //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
         //Message message("helloWorld", "mrBombastic2", data);
-        ShoppingList shopping_list(hashed_id);
-        shopping_list.setUserId(hashed_id);
+        ShoppingList shopping_list(list_id);
+        shopping_list.setUserId(user_id);
         shopping_list.add("apple");
         shopping_list.add("banana");
         shopping_list.add("apple", request_nbr);
