@@ -5,16 +5,22 @@ CXXFLAGS = -g
 
 all: client server broker
 
-libs = ./libs/message.cpp ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp
+# Source files and object files
+LIB_SRC = ./libs/message.cpp ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp
+LIB_OBJ = $(LIB_SRC:.cpp=.o)
 
-client:
-	$(CXX) $(CXXFLAGS) ./client/client.cpp $(libs) -o client.out -lzmq
+# Compile each library source file into an object file
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-server:
-	$(CXX) $(CXXFLAGS) ./server/server.cpp $(libs) ./server/handler.cpp ./server/md5.cpp -o server.out -lzmq -lssl -lcrypto
+client: ./client/client.cpp $(LIB_OBJ)
+	$(CXX) $(CXXFLAGS) ./client/client.cpp $(LIB_OBJ) -o client.out -lzmq
 
-broker:
-	$(CXX) $(CXXFLAGS) ./server/broker.cpp $(libs) -o broker.out -lzmq
+server: ./server/server.cpp ./server/handler.cpp ./server/md5.cpp $(LIB_OBJ)
+	$(CXX) $(CXXFLAGS) ./server/server.cpp ./server/handler.cpp ./server/md5.cpp $(LIB_OBJ) -o server.out -lzmq -lssl -lcrypto
+
+broker: ./server/broker.cpp $(LIB_OBJ)
+	$(CXX) $(CXXFLAGS) ./server/broker.cpp $(LIB_OBJ) -o broker.out -lzmq
 
 clean:
-	rm -f *.out
+	rm -f *.out $(LIB_OBJ)
