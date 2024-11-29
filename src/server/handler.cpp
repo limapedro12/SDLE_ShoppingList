@@ -116,6 +116,7 @@ void mergeShoppingList(json request) {
 
         ShoppingList listToKeep = oldList.merge(newList);
         json listToKeepInJson;
+        
         listToKeepInJson["id"] = listToKeep.get_id();
         listToKeepInJson["data"] = listToKeep.contentsToJSON();
 
