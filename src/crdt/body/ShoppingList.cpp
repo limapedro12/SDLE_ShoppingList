@@ -6,17 +6,17 @@ ShoppingList::ShoppingList(string id){
   this->items = CRDTCounterMap();
 }
 
-void ShoppingList::set_user_id(int user_id){
+void ShoppingList::setUserId(string user_id){
   this->user_id = user_id;
 }
 
-void ShoppingList::reset_user_id(){
-  this->user_id = 0;
+void ShoppingList::resetUserId(){
+  this->user_id = "";
 }
 
 void ShoppingList::add(string item){
-  if(user_id == 0){
-    throw std::invalid_argument("user_id not set \n Please call set_user_id() first");
+  if(user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
   if (items.find(item) == items.end()){
     items[item] = CRDTCounter();
@@ -25,8 +25,8 @@ void ShoppingList::add(string item){
 }
 
 void ShoppingList::add(string item, int n){
-  if (user_id == 0){
-    throw std::invalid_argument("user_id not set \n Please call set_user_id() first");
+  if (user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
   if (items.find(item) == items.end()){
     items[item] = CRDTCounter();
@@ -35,8 +35,8 @@ void ShoppingList::add(string item, int n){
 }
 
 void ShoppingList::decrease(string item){
-  if (user_id == 0){
-    throw std::invalid_argument("user_id not set \n Please call set_user_id() first");
+  if (user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
   if (items.find(item) == items.end()){
     return;
@@ -48,8 +48,8 @@ void ShoppingList::decrease(string item){
 }
 
 void ShoppingList::decrease(string item, int n){
-  if (user_id == 0){
-    throw std::invalid_argument("user_id not set \n Please call set_user_id() first");
+  if (user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
   if (items.find(item) == items.end()){
     return;
@@ -153,12 +153,30 @@ CRDTCounterMap ShoppingList::get_items_with_counter(){
   return this->items;
 }
 
-// int main(){
-//   int user_id = 1;
-//   int user_id2 = 2;
-//   ShoppingList shopping_list("1");
-//   shopping_list.set_user_id(user_id);
+json ShoppingList::contentsToJSON(){
+  nlohmann::json json;
+  for (auto item : items){
+        json[item.first] = item.second.toJSON();
+  }
+  return json;
+}
 
+ShoppingList::ShoppingList(string id, json j){
+  this->id = id;
+  this->items = CRDTCounterMap();
+  for (auto item : j.items())
+  {
+    this->items[item.key()] = CRDTCounter(item.value());
+  }
+}
+
+// int main(){
+//   string user_id = "1";
+//   string user_id2 = "2";
+//   ShoppingList shopping_list("1");
+//   shopping_list.setUserId(user_id);
+
+//   cout << "Original shopping list: " << endl;
 //   shopping_list.add("apple");
 //   shopping_list.add("banana");
 //   shopping_list.add("apple", 3);
@@ -167,7 +185,7 @@ CRDTCounterMap ShoppingList::get_items_with_counter(){
 //        << endl;
 
 //   ShoppingList shopping_list_copy = shopping_list.copy();
-//   shopping_list_copy.set_user_id(user_id2);
+//   shopping_list_copy.setUserId(user_id2);
 //   shopping_list_copy.add("orange");
 //   shopping_list_copy.add("apple", 2);
 //   shopping_list_copy.add("banana", 20);
@@ -176,8 +194,16 @@ CRDTCounterMap ShoppingList::get_items_with_counter(){
 //   shopping_list.decrease("apple");
 //   shopping_list.decrease("banana", 2);
 
-//   cout << shopping_list.print() << endl;
-//   cout << shopping_list_copy.print() << endl;
-//   cout << shopping_list.merge(shopping_list_copy).print() << endl;
+//   cout << "Shopping list after user 1:" << endl;
+//   cout << shopping_list.print() << endl
+//        << endl;
+
+//   cout << "Shopping list after user 2:" << endl;
+//   cout << shopping_list_copy.print() << endl
+//        << endl;
+
+//   cout << "Merged shopping list:" << endl;
+//   cout << shopping_list.merge(shopping_list_copy).print() << endl
+//        << endl;
 
 // }

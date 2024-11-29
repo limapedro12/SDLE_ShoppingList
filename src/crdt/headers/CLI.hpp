@@ -5,6 +5,9 @@
 
 using namespace std;
 
+#ifndef CLI_H
+#define CLI_H
+
 void add(ShoppingList& shopping_list);
 
 void decrease(ShoppingList& shopping_list);
@@ -26,3 +29,5 @@ void create(vector<ShoppingList> &shopping_lists);
 void push(ShoppingList &shopping_list);
 
 void pull(ShoppingList &shopping_list);
+
+#endif

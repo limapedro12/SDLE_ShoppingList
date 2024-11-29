@@ -3,6 +3,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "../server/handler.hpp"
+
+md5 encrypter1;
 
 int main() {
     // Initialize ZeroMQ context and socket
@@ -11,8 +14,10 @@ int main() {
 
     socket.connect("tcp://localhost:5559");
 
+    std::string hashed_id = encrypter1.encrypt("1");
+
     // create list
-    Message creation("create", "1", {});
+    Message creation("create", hashed_id, {});
     s_send(socket, creation.toString());
 
     std::string reply_str = s_recv(socket);
@@ -23,8 +28,8 @@ int main() {
         // Create the message object
         //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
         //Message message("helloWorld", "mrBombastic2", data);
-        ShoppingList shopping_list("1");
-        shopping_list.set_user_id(1);
+        ShoppingList shopping_list(hashed_id);
+        shopping_list.setUserId(hashed_id);
         shopping_list.add("apple");
         shopping_list.add("banana");
         shopping_list.add("apple", request_nbr);

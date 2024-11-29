@@ -3,7 +3,7 @@
 using namespace std;
 
 
-void CausalHistories::set_value(int id, int value){
+void CausalHistories::set_value(string id, int value){
     this->causalHistory[id] = value;
 }
 
@@ -12,7 +12,7 @@ CausalHistories::CausalHistories(){
     this->causalHistory = {};
 }
 
-void CausalHistories::add(int id){
+void CausalHistories::add(string id){
     if(this->causalHistory.find(id) == this->causalHistory.end()){
         this->causalHistory[id] = 1;
     } else {
@@ -20,7 +20,7 @@ void CausalHistories::add(int id){
     }
 }
 
-int CausalHistories::get(int id){
+int CausalHistories::get(string id){
     if(this->causalHistory.find(id) == this->causalHistory.end()){
         return 0;
     } else {
@@ -28,7 +28,7 @@ int CausalHistories::get(int id){
     }
 }
 
-map<int, int> CausalHistories::getMap(){
+map<string, int> CausalHistories::getMap(){
     return causalHistory;
 }
 
@@ -79,7 +79,7 @@ bool CausalHistories::operator<(CausalHistories ch) const{
     }
 }
 
-bool CausalHistories::operator<(pair<int, int> p) const{
+bool CausalHistories::operator<(pair<string, int> p) const{
     return (causalHistory.find(p.first) == causalHistory.end()) || 
             (causalHistory.find(p.first)->second < p.second);
 }
@@ -93,11 +93,18 @@ CausalHistories CausalHistories::copy() const{
 string CausalHistories::print() const{
     string s = "";
     for (auto it = causalHistory.begin(); it != causalHistory.end(); it++){
-        s += to_string(it->first) + ":" + to_string(it->second) + " ";
+        s += it->first + ":" + to_string(it->second) + " ";
     }
     return s;
 }
 
+json CausalHistories::toJSON(){
+    return causalHistory;
+}
+
+CausalHistories::CausalHistories(json j){
+    causalHistory = j;
+}
 
 // int main() {
 //     CausalHistories ch1;

@@ -1,20 +1,29 @@
 #include "string"
 #include "set"
 #include "map"
+#include "../../libs/json.hpp"
 #include "Counter.hpp"
+
+using namespace std;
+using json = nlohmann::json;
+
+#ifndef SHOPPINGLIST_H
+#define SHOPPINGLIST_H
 
 class ShoppingList{
 private:
   CRDTCounterMap items;
   string id;
-  int user_id = 0;
+  string user_id = "";
 
 public:
   ShoppingList(string id);
 
-  void set_user_id(int user_id);
+  ShoppingList(string id, json j);
 
-  void reset_user_id();
+  void setUserId(string user_id);
+
+  void resetUserId();
 
   void add(string item);
 
@@ -47,4 +56,9 @@ public:
   string get_id();
 
   string print();
+
+  json contentsToJSON();
+
 };
+
+#endif

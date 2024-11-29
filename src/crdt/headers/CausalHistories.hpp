@@ -1,29 +1,38 @@
 #include <map>
+#include <string>
 #include <iostream>
+#include "../../libs/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
+
+#ifndef CAUSALHISTORIES_H
+#define CAUSALHISTORIES_H
 
 class CausalHistories {
 
     private:
 
-    map<int, int> causalHistory;
+    map<string, int> causalHistory;
 
-    void set_value(int id, int value);
+    void set_value(string id, int value);
 
     public:
 
     // Constructor
     CausalHistories();
 
+    // Constructor from  json
+    CausalHistories(json j);
+
     // add one event to the causal history in user id
-    void add(int id);
+    void add(string id);
 
     // get the value of the causal history in user id
-    int get(int id);
+    int get(string id);
 
     // get full map of the causal history
-    map<int, int> getMap();
+    map<string, int> getMap();
 
     // merge two causal histories
     CausalHistories merge(CausalHistories ch);
@@ -35,11 +44,16 @@ class CausalHistories {
     bool operator<(CausalHistories ch) const;
 
     // check if one pair user id and event number happpens after the current causal history
-    bool operator<(pair<int, int> p) const;
+    bool operator<(pair<string, int> p) const;
 
     // copy the causal history
     CausalHistories copy() const;
 
     // represent the causal history as a string
     string print() const;
+
+    // return teh equivalent json object
+    json toJSON();
 };
+
+#endif

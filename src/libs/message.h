@@ -18,8 +18,6 @@ class Message{
         Message(std::string json);
         Message(std::string operation, std::string id, std::unordered_map <std::string, int> data);
         Message(ShoppingList shoppingList, std::string operation);
-        nlohmann::json CRDTCounterMapToJSON(CRDTCounterMap items);
-        nlohmann::json CRDTCounterToJSON(CRDTCounter counter);
         ~Message();
         std::string getOperation();
         std::string getId();

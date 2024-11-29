@@ -1,5 +1,6 @@
 #include "../libs/zhelpers.hpp"
 #include "../libs/message.h"
+#include "../crdt/headers/ShoppingList.hpp"
 #include <string>
 #include <iostream>
 #include "handler.hpp"
@@ -16,7 +17,6 @@ Message handleMessage(nlohmann::json received){
         return Message(operation, id, data);
     }
     else if (operation == "create"){
-        std::cout << "Creating shopping list" << std::endl;
         createShoppingList(received);
         data = {{"Success", 1}};
         return Message("create", id, data);
@@ -53,11 +53,14 @@ int main (void)
     while (1) {
         //  Wait for next request from client
         std::string received = s_recv (socket);
-        std::cout << "Received request: [" << received << "]" << std::endl;
+        std::cout << "Received request: [" << received << "]" << std::endl << std::endl;
 
         // Parse received message
         //Message received(string);
         nlohmann::json json = nlohmann::json::parse(received);
+
+        ShoppingList shoppingList(json["id"], json["data"]);
+        cout << "Shopping list: " << shoppingList.print() << endl;
 
         // Build a reply message
         Message reply = handleMessage(json);
