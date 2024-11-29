@@ -10,6 +10,6 @@ using namespace std;
 
 // Function declarations
 void createShoppingList(json request);
-void getShoppingList(json request);
+json getShoppingList(json request);
 void eraseShoppingList(json request);
 void mergeShoppingList(json request);

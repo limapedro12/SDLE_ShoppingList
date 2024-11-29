@@ -22,8 +22,12 @@ Message handleMessage(nlohmann::json received){
         return Message("create", id, data);
     }
     else if (operation == "get"){
-        getShoppingList(received);
-        data = {{"Success", 1}};
+        json rep = getShoppingList(received);
+        if (rep.empty()){
+            data = {{"Error", 1}};
+            return Message("error", id, data);
+        }
+        data = {{"Success", 1}, {"data", rep["data"]}};
         return Message("get", id, data);
     }
     else if (operation == "erase"){
