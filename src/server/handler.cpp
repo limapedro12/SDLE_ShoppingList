@@ -28,18 +28,19 @@ void createShoppingList(json request) {
     cout << "Shopping list created with unique ID: " << request["id"].get<string>() << endl;
 }
 
-void getShoppingList(json request) {
+json getShoppingList(json request) {
     string path = "lists/" + request["id"].get<string>() + ".json";
     ifstream file(path);
 
     if (file.is_open()) {
         json list;
         file >> list;
-        cout << "Shopping list: " << list.dump(4) << endl;
         file.close();
+        return list;
     } else {
         cout << "Failed to open the file. Ensure the unique ID is correct." << endl;
     }
+    return json();
 }
 
 void eraseShoppingList(json request) {
@@ -60,12 +61,17 @@ void mergeShoppingList(json request) {
         file >> list;
         file.close();
 
-        for (auto& item : request["data"].items()) {
-            list["data"][item.key()] = item.value();
-        }
+        ShoppingList oldList(list["id"], list["data"]);
+        ShoppingList newList(request["id"], request["data"]);
+
+        ShoppingList listToKeep = oldList.merge(newList);
+        json listToKeepInJson;
+        
+        listToKeepInJson["id"] = listToKeep.get_id();
+        listToKeepInJson["data"] = listToKeep.contentsToJSON();
 
         ofstream new_file(path);
-        new_file << list.dump(4);
+        new_file << listToKeepInJson.dump(4);
         new_file.close();
 
         cout << "Shopping list updated successfully" << endl;
