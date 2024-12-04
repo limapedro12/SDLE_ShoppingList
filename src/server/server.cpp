@@ -4,6 +4,22 @@
 #include <string>
 #include <iostream>
 #include "handler.hpp"
+#include "consistentHashing.hpp"
+
+ConsistentHashRing hashRing;
+
+// Initialize nodes for the ring
+void initializeNodes() {
+    Node* node1 = new Node("Node1");
+    Node* node2 = new Node("Node2");
+    Node* node3 = new Node("Node3");
+
+    hashRing.addNode(node1);
+    hashRing.addNode(node2);
+    hashRing.addNode(node3);
+
+    std::cout << "Nodes added to the ring: Node1, Node2, Node3" << std::endl;
+}
 
 /**
  * @brief Handle the received message
@@ -49,6 +65,8 @@ Message handleMessage(nlohmann::json received){
 
 int main (void) 
 {
+    initializeNodes();
+
     zmq::context_t context(1);
 
     zmq::socket_t socket(context, ZMQ_REP);
