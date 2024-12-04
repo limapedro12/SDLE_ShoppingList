@@ -128,15 +128,23 @@ CounterMap CounterMap::merge(CounterMap other, string userId){
   map<string, CounterMapInstance> new_items;
 
   for (auto &item : this->items){
-    cout << "item.first: " << item.first << endl;
     if (other.items.find(item.first) == other.items.end())
       new_items[item.first] = item.second; 
-    else
-      new_items[item.first] = {item.second.counter.merge(other.items[item.first].counter), userId, this->counter_histories.get(userId)};
+    else {
+      pair<string, int> causalThis = {item.second.user_id, item.second.context_num};
+      pair<string, int> other_causal = {other.items[item.first].user_id, other.items[item.first].context_num};
+      if (causalThis == other_causal)
+        new_items[item.first] = item.second;
+      // else if (this->counter_histories < other_causal)
+      //   new_items[item.first] = other.items[item.first];
+      // else if (other.counter_histories < causalThis)
+      //   new_items[item.first] = item.second;
+      else
+        new_items[item.first] = {item.second.counter.merge(other.items[item.first].counter), userId, this->counter_histories.get(userId)};
+    }
   }
 
   for (auto &item : other.items){
-    cout << "item.first: " << item.first << endl;
     if (this->items.find(item.first) == this->items.end())
       new_items[item.first] = item.second;
   }
