@@ -2,7 +2,7 @@
 #include "set"
 #include "map"
 #include "../../libs/json.hpp"
-#include "Counter.hpp"
+#include "CounterMap.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 class ShoppingList{
 private:
-  CRDTCounterMap items;
+  CounterMap items;
   string id;
   string user_id = "";
 
@@ -35,11 +35,11 @@ public:
 
   void set_value(string item, int value);
 
-  void reset(string item);
+  void remove(string item);
 
   int get_quantity(string item);
 
-  bool is_item_present(string item);
+  bool contains(string item);
 
   ShoppingList copy();
 
@@ -51,7 +51,7 @@ public:
 
   map<string, int> get_items_with_quantity();
 
-  CRDTCounterMap get_items_with_counter();
+  CounterMap get_items_with_counter();
   
   string get_id();
 
