@@ -3,56 +3,6 @@
 // MD5 encrypter for hashing
 md5 encrypter;
 
-int main1() {
-    cout << "Choose an option: " << endl
-         << "1. Create a shopping list" << endl
-         << "2. Get a shopping list" << endl
-         << "3. Erase a shopping list" << endl
-         << "4. Merge shopping list" << endl;
-    int option;
-    cin >> option;
-    cout << endl;
-
-    json request;
-    ifstream file;
-
-    switch (option)
-    {
-    case 1:
-        file.open("createRequest.json");
-        file >> request;
-        file.close();
-        createShoppingList(request);
-        break;
-    case 2: {
-        file.open("getRequest.json");
-        file >> request;
-        file.close();
-        getShoppingList(request);
-        break;
-    }
-    case 3: {
-        file.open("eraseRequest.json");
-        file >> request;
-        file.close();
-        eraseShoppingList(request);
-        break;
-    }
-    case 4: {
-        file.open("mergeRequest.json");
-        file >> request;
-        file.close();
-        mergeShoppingList(request);
-        break;
-    }
-    default:
-        cout << "Invalid option" << endl;
-        break;
-    }
-
-    return 0;
-}
-
 void createShoppingList(json request) {
     int counter = 1;
     //try to open the list with the id = hashed_id from the json + hashed counter
