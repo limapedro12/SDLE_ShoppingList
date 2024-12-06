@@ -36,8 +36,8 @@ void set_value(ShoppingList &shopping_list){
 void reset(ShoppingList &shopping_list){
   string item;
   cin >> item;
-  shopping_list.reset(item);
-  cout << "Reset " << item << " from the shopping list" << endl;
+  shopping_list.remove(item);
+  cout << "Remove " << item << " from the shopping list" << endl;
 }
 
 int base_id = 0;

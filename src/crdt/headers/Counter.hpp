@@ -53,6 +53,4 @@ public:
     json toJSON();
 };
 
-typedef map<string, CRDTCounter> CRDTCounterMap;
-
 #endif

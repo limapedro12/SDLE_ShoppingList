@@ -4,6 +4,22 @@
 #include <string>
 #include <iostream>
 #include "handler.hpp"
+#include "consistentHashing.hpp"
+
+ConsistentHashRing hashRing;
+
+// Initialize nodes for the ring
+void initializeNodes() {
+    Node* node1 = new Node("Node1");
+    Node* node2 = new Node("Node2");
+    Node* node3 = new Node("Node3");
+
+    hashRing.addNode(node1);
+    hashRing.addNode(node2);
+    hashRing.addNode(node3);
+
+    std::cout << "Nodes added to the ring: Node1, Node2, Node3" << std::endl;
+}
 
 /**
  * @brief Handle the received message
@@ -22,8 +38,12 @@ Message handleMessage(nlohmann::json received){
         return Message("create", id, data);
     }
     else if (operation == "get"){
-        getShoppingList(received);
-        data = {{"Success", 1}};
+        json rep = getShoppingList(received);
+        if (rep.empty()){
+            data = {{"Error", 1}};
+            return Message("error", id, data);
+        }
+        data = {{"Success", 1}, {"data", rep["data"]}};
         return Message("get", id, data);
     }
     else if (operation == "erase"){
@@ -45,6 +65,8 @@ Message handleMessage(nlohmann::json received){
 
 int main (void) 
 {
+    initializeNodes();
+
     zmq::context_t context(1);
 
     zmq::socket_t socket(context, ZMQ_REP);
@@ -58,9 +80,6 @@ int main (void)
         // Parse received message
         //Message received(string);
         nlohmann::json json = nlohmann::json::parse(received);
-
-        ShoppingList shoppingList(json["id"], json["data"]);
-        cout << "Shopping list: " << shoppingList.print() << endl;
 
         // Build a reply message
         Message reply = handleMessage(json);

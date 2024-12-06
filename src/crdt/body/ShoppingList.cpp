@@ -3,7 +3,7 @@
 
 ShoppingList::ShoppingList(string id){
   this->id = id;
-  this->items = CRDTCounterMap();
+  this->items = CounterMap();
 }
 
 void ShoppingList::setUserId(string user_id){
@@ -18,75 +18,57 @@ void ShoppingList::add(string item){
   if(user_id == ""){
     throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  if (items.find(item) == items.end()){
-    items[item] = CRDTCounter();
-  }
-  items[item].incr(user_id);
+  items.add(item, user_id);
 }
 
 void ShoppingList::add(string item, int n){
   if (user_id == ""){
     throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  if (items.find(item) == items.end()){
-    items[item] = CRDTCounter();
-  }
-  items[item].incr(n, user_id);
+  items.add(item, n, user_id);
 }
 
 void ShoppingList::decrease(string item){
   if (user_id == ""){
     throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  if (items.find(item) == items.end()){
-    return;
-  }
-  if (items[item].value() < 1){
-    return;
-  }
-  items[item].decr(user_id);
+  items.decrease(item, user_id);
 }
 
 void ShoppingList::decrease(string item, int n){
   if (user_id == ""){
     throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  if (items.find(item) == items.end()){
+  if (!items.contains(item)){
     return;
   }
 
-  if (items[item].value() > n)
-    items[item].decr(n, user_id);
+  if (items.get_quantity(item) > n)
+    items.decrease(item, user_id);
   else
-    items[item].reset();
+    items.remove(item, user_id);
 }
 
 void ShoppingList::set_value(string item, int value){
-  if (items.find(item) == items.end()){
-    return;
+  if (user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  items[item].set_value(value, user_id);
+  items.set_value(item, value, user_id);
 }
 
-void ShoppingList::reset(string item){
-  if (items.find(item) == items.end()){
-    return;
+void ShoppingList::remove(string item){
+  if (user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  items[item].reset();
+  items.remove(item, user_id);
 }
 
 int ShoppingList::get_quantity(string item){
-  if (items.find(item) == items.end()){
-    return 0;
-  }
-  return items[item].value();
+  return items.get_quantity(item);
 }
 
-bool ShoppingList::is_item_present(string item){
-  if (items.find(item) == items.end()){
-    return false;
-  }
-  return items[item].value() > 0;
+bool ShoppingList::contains(string item){
+  return items.contains(item);
 }
 
 ShoppingList ShoppingList::copy(){
@@ -97,43 +79,24 @@ ShoppingList ShoppingList::copy(){
 }
 
 void ShoppingList::fresh(){
-  for (auto &item : items){
-    item.second.fresh(user_id);
+  if (this->user_id == ""){
+    throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
+  this->items.fresh(this->user_id);
 }
 
 ShoppingList ShoppingList::merge(ShoppingList other){
   ShoppingList new_shopping_list(this->id);
-  new_shopping_list.items = this->items;
-
-  for (auto item : other.items){
-    if (new_shopping_list.items.find(item.first) == new_shopping_list.items.end()){
-      new_shopping_list.items[item.first] = item.second;
-    }
-    else{
-      new_shopping_list.items[item.first] = new_shopping_list.items[item.first].merge(item.second);
-      if (new_shopping_list.items[item.first].value() < 0){
-        new_shopping_list.items[item.first].reset();
-      }
-    }
-  }
+  new_shopping_list.items = this->items.merge(other.items, this->user_id);
   return new_shopping_list;
 }
 
 set<string> ShoppingList::get_items(){
-  set<string> items;
-  for (auto item : this->items){
-    items.insert(item.first);
-  }
-  return items;
+  return this->items.get_items();
 }
 
 map<string, int> ShoppingList::get_items_with_quantity(){
-  map<string, int> items;
-  for (auto item : this->items){
-    items[item.first] = item.second.value();
-  }
-  return items;
+  return this->items.get_items_with_quantity();
 }
 
 string ShoppingList::get_id(){
@@ -141,34 +104,25 @@ string ShoppingList::get_id(){
 }
 
 string ShoppingList::print(){
-  string output = "{ ";
-  for (auto item : this->items){
-    output += item.first + ": " + to_string(item.second.value()) + ", ";
-  }
-  output += "}";
-  std::cout << output << std::endl;
+  string output = "[id: ";
+  output += this->id;
+  output += ", items: ";
+  output += this->items.print();
+  output += "]";
   return output;
 }
 
-CRDTCounterMap ShoppingList::get_items_with_counter(){
+CounterMap ShoppingList::get_items_with_counter(){
   return this->items;
 }
 
 json ShoppingList::contentsToJSON(){
-  nlohmann::json json;
-  for (auto item : items){
-        json[item.first] = item.second.toJSON();
-  }
-  return json;
+  return this->items.toJSON();
 }
 
 ShoppingList::ShoppingList(string id, json j){
-  this->id = id;  
-  this->items = CRDTCounterMap();
-  for (auto item : j.items())
-  {
-    this->items[item.key()] = CRDTCounter(item.value());
-  }
+  this->id = id;
+  this->items = CounterMap(j);
 }
 
 // int main(){
