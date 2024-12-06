@@ -146,6 +146,7 @@ string ShoppingList::print(){
     output += item.first + ": " + to_string(item.second.value()) + ", ";
   }
   output += "}";
+  std::cout << output << std::endl;
   return output;
 }
 
@@ -162,7 +163,7 @@ json ShoppingList::contentsToJSON(){
 }
 
 ShoppingList::ShoppingList(string id, json j){
-  this->id = id;
+  this->id = id;  
   this->items = CRDTCounterMap();
   for (auto item : j.items())
   {

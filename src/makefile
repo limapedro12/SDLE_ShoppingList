@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g
+CXXFLAGS = -g -std=c++17
 
 .PHONY: all client server broker clean crdt
 
