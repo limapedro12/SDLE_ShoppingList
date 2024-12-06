@@ -57,6 +57,7 @@ int main() {
 
     if (!user_found) {
         json new_user = {{user_id, 1}};
+        value = 1;
         j["user_numbers"].push_back(new_user);
     }
 
@@ -64,7 +65,6 @@ int main() {
     std::ofstream out_file("server/number.json");
     out_file << j.dump(4);
     out_file.close();
-
 
     std::string unhashed_list = user_id + "-" + std::to_string(value);
     std::string list_id = encrypter1.encrypt(unhashed_list);

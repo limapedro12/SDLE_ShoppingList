@@ -16,8 +16,8 @@ LIB_OBJ = $(LIB_SRC:.cpp=.o)
 client: ./client/client.cpp $(LIB_OBJ)
 	$(CXX) $(CXXFLAGS) ./client/client.cpp $(LIB_OBJ) -o client.out -lzmq -lssl -lcrypto
 
-server: ./server/server.cpp ./server/handler.cpp ./server/md5.cpp $(LIB_OBJ)
-	$(CXX) $(CXXFLAGS) ./server/server.cpp ./server/handler.cpp ./server/md5.cpp $(LIB_OBJ) -o server.out -lzmq -lssl -lcrypto
+server: ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consistentHashing.cpp $(LIB_OBJ)
+	$(CXX) $(CXXFLAGS) ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consistentHashing.cpp $(LIB_OBJ) -o server.out -lzmq -lssl -lcrypto
 
 broker: ./server/broker.cpp $(LIB_OBJ)
 	$(CXX) $(CXXFLAGS) ./server/broker.cpp $(LIB_OBJ) -o broker.out -lzmq
