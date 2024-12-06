@@ -125,40 +125,40 @@ ShoppingList::ShoppingList(string id, json j){
   this->items = CounterMap(j);
 }
 
-int main(){
-  string user_id = "1";
-  string user_id2 = "2";
-  ShoppingList shopping_list("1");
-  shopping_list.setUserId(user_id);
+// int main(){
+//   string user_id = "1";
+//   string user_id2 = "2";
+//   ShoppingList shopping_list("1");
+//   shopping_list.setUserId(user_id);
 
-  cout << "Original shopping list: " << endl;
-  shopping_list.add("apple");
-  shopping_list.add("banana");
-  shopping_list.add("apple", 3);
+//   cout << "Original shopping list: " << endl;
+//   shopping_list.add("apple");
+//   shopping_list.add("banana");
+//   shopping_list.add("apple", 3);
 
-  cout << shopping_list.print() << endl
-       << endl;
+//   cout << shopping_list.print() << endl
+//        << endl;
 
-  ShoppingList shopping_list_copy = shopping_list.copy();
-  shopping_list_copy.setUserId(user_id2);
-  shopping_list_copy.add("orange");
-  shopping_list_copy.add("apple", 2);
-  shopping_list_copy.add("banana", 20);
-  shopping_list_copy.decrease("banana", 21);
+//   ShoppingList shopping_list_copy = shopping_list.copy();
+//   shopping_list_copy.setUserId(user_id2);
+//   shopping_list_copy.add("orange");
+//   shopping_list_copy.add("apple", 2);
+//   shopping_list_copy.add("banana", 20);
+//   shopping_list_copy.decrease("banana", 21);
 
-  shopping_list.decrease("apple");
-  shopping_list.decrease("banana", 2);
+//   shopping_list.decrease("apple");
+//   shopping_list.decrease("banana", 2);
 
-  cout << "Shopping list after user 1:" << endl;
-  cout << shopping_list.print() << endl
-       << endl;
+//   cout << "Shopping list after user 1:" << endl;
+//   cout << shopping_list.print() << endl
+//        << endl;
 
-  cout << "Shopping list after user 2:" << endl;
-  cout << shopping_list_copy.print() << endl
-       << endl;
+//   cout << "Shopping list after user 2:" << endl;
+//   cout << shopping_list_copy.print() << endl
+//        << endl;
 
-  cout << "Merged shopping list:" << endl;
-  cout << shopping_list.merge(shopping_list_copy).print() << endl
-       << endl;
+//   cout << "Merged shopping list:" << endl;
+//   cout << shopping_list.merge(shopping_list_copy).print() << endl
+//        << endl;
 
-}
+// }
