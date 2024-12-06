@@ -81,9 +81,6 @@ int main (void)
         //Message received(string);
         nlohmann::json json = nlohmann::json::parse(received);
 
-        ShoppingList shoppingList(json["id"], json["data"]);
-        cout << "Shopping list: " << shoppingList.print() << endl;
-
         // Build a reply message
         Message reply = handleMessage(json);
 

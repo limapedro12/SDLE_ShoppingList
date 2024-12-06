@@ -2,3 +2,4 @@
 *.out
 *.o
 src/lists/*.json
+src/nodes/*.json
