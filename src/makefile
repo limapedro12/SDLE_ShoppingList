@@ -1,12 +1,12 @@
 CXX = g++
-CXXFLAGS = -g
+CXXFLAGS = -g -std=c++17
 
 .PHONY: all client server broker clean crdt
 
 all: client server broker
 
 # Source files and object files
-LIB_SRC = ./libs/message.cpp ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp
+LIB_SRC = ./libs/message.cpp ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp ./crdt/body/CounterMap.cpp
 LIB_OBJ = $(LIB_SRC:.cpp=.o)
 
 # Compile each library source file into an object file
