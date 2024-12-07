@@ -6,6 +6,12 @@ CounterMap::CounterMap(){
 }
 
 CounterMap::CounterMap(json j){
+  //check if json is null or empty
+  if (j.is_null() || j.empty()){
+    this->counter_histories = CausalHistories();
+    this->items = map<string, CounterMapInstance>();
+    return;
+  }
   this->counter_histories = CausalHistories(j["causal_histories"]);
   this->items = map<string, CounterMapInstance>();
   json dataMap = j["map"];

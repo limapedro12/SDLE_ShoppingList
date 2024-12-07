@@ -129,6 +129,7 @@ int createList(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
     s_send(socket, creation.toString());
 
     // receive reply from server
+    std::string reply_str = s_recv(socket);
     // todo once we actally send errors when stuff goes wrong on server
 
     return 0;
@@ -173,7 +174,8 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
     }
 }
 
-int alterListUI(ShoppingList* shoppingList){
+int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
+
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add an item" << std::endl;
     std::cout << "2: Remove an item" << std::endl;
@@ -186,12 +188,20 @@ int alterListUI(ShoppingList* shoppingList){
         std::cout << "Enter the item to add: ";
         std::cin >> item;
         shoppingList->add(item);
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 2){
         std::string item;
         std::cout << "Enter the item to remove: ";
         std::cin >> item;
         shoppingList->decrease(item);
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 3){
         std::string item;
@@ -201,6 +211,10 @@ int alterListUI(ShoppingList* shoppingList){
         std::cout << "Enter the new quantity: ";
         std::cin >> quantity;
         shoppingList->set_value(item, quantity);
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 4){
         // saving to machine routine, it's pretty simple but we could wrap it in a function for clarity
@@ -273,7 +287,7 @@ int main() {
                 current_shopping_list = selectListUI(shopping_lists);
                 break;
             case LIST_SELECTED:
-                alterListUI(current_shopping_list);
+                alterListUI(current_shopping_list, socket);
                 break;
             case SHUTDOWN:
                 std::cout << "See you next time!" << std::endl;

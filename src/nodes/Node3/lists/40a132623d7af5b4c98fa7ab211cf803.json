@@ -1,0 +1,31 @@
+{
+    "data": {
+        "causal_histories": {
+            "c4ca4238a0b923820dcc509a6f75849b": 1
+        },
+        "map": {
+            "m": {
+                "context_num": 1,
+                "counter": {
+                    "causalHistory": {
+                        "c4ca4238a0b923820dcc509a6f75849b": 1
+                    },
+                    "counter": [
+                        [
+                            [
+                                "c4ca4238a0b923820dcc509a6f75849b",
+                                1
+                            ],
+                            [
+                                1,
+                                0
+                            ]
+                        ]
+                    ]
+                },
+                "user_id": "c4ca4238a0b923820dcc509a6f75849b"
+            }
+        }
+    },
+    "id": "40a132623d7af5b4c98fa7ab211cf803"
+}
