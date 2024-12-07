@@ -239,7 +239,8 @@ int main() {
     // Load the user id
     loadUser();
 
-    socket.set(zmq::sockopt::routing_id, user_id);
+    srand(time(NULL));
+    std::string zmqID = s_set_id(socket);
     socket.connect("tcp://localhost:5559");
 
 /*

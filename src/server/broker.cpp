@@ -1,15 +1,20 @@
 #include "../libs/zhelpers.hpp"
 
+void receive_empty(zmq::socket_t& socket){
+    zmq::message_t empty_msg;
+    socket.recv(empty_msg, zmq::recv_flags::none);
+    assert(empty_msg.size() == 0);
+    std::cout << "Received empty message: " << empty_msg.to_string() << std::endl;
+}
+
 int main (void) 
 {
     //  Prepare our context and sockets
     zmq::context_t context(1);
     zmq::socket_t frontend(context, ZMQ_ROUTER);
     zmq::socket_t backend(context, ZMQ_ROUTER);
-    zmq::socket_t workerChannel(context, ZMQ_REP);
     zmq_bind (frontend, "tcp://*:5559");
     zmq_bind (backend,  "tcp://*:5560");
-    zmq_bind (workerChannel, "tcp://*:5561");
 
     // Store worker information
     // first is worker id from zmq, second is hash of worker
@@ -18,77 +23,55 @@ int main (void)
     //  Initialize poll set
     zmq_pollitem_t items [] = {
         { frontend, 0, ZMQ_POLLIN, 0 },
-        { backend,  0, ZMQ_POLLIN, 0 },
-        { workerChannel, 0, ZMQ_POLLIN, 0 }
+        { backend,  0, ZMQ_POLLIN, 0 }
     };
     //  Switch messages between sockets
     while (1) {
         zmq_msg_t message;
-        zmq::poll (items, 3, -1);
+        zmq::poll (items, 2, -1);
         if (items [0].revents & ZMQ_POLLIN) {
-            zmq::message_t client_id_msg;
-            frontend.recv(client_id_msg, zmq::recv_flags::none);
-            std::cout << "Received client id: " << client_id_msg.to_string() << std::endl;
+            std::string client_addr = s_recv(frontend);
+            std::cout << "Received client address: " << client_addr << std::endl;
 
-            zmq::message_t empty_msg;
-            frontend.recv(empty_msg, zmq::recv_flags::none);
-            std::cout << "Received empty message: " << empty_msg.to_string() << std::endl;
+            receive_empty(frontend);
 
-            zmq::message_t request_msg;
-            frontend.recv(request_msg, zmq::recv_flags::none);
-            std::cout << "Received request: " << request_msg.to_string() << std::endl;
+            std::string request = s_recv(frontend);
+            std::cout << "Received request: " << request << std::endl;
 
-            // Select worker based on custom load balancing logic
-            if (!workers.empty()) {
-                auto selected_worker = workers.begin();
-
-                // Forward the request to the selected worker
-                std::cout << "Forwarding request to worker: " << selected_worker->first << std::endl;
-                backend.send(zmq::buffer(selected_worker->first), zmq::send_flags::sndmore);
-                backend.send(zmq::message_t{}, zmq::send_flags::sndmore);
-                backend.send(client_id_msg, zmq::send_flags::sndmore);
-                backend.send(request_msg, zmq::send_flags::none);
+            if (!workers.empty()){
+                std::string worker_id = workers.begin()->first; // replace with hashing logic
+                std::cout << "Sending request to worker: " << worker_id << std::endl;
+                s_sendmore(backend, worker_id);
+                s_sendmore(backend, std::string(""));
+                s_sendmore(backend, client_addr);
+                s_sendmore(backend, std::string(""));
+                s_send(backend, request);
             }
         }
         if (items [1].revents & ZMQ_POLLIN) {
-            zmq::message_t worker_id_msg;
-            backend.recv(worker_id_msg, zmq::recv_flags::none);
-            std::string worker_id = worker_id_msg.to_string();
+            std::string worker_id = s_recv(backend);
             std::cout << "Received worker id: " << worker_id << std::endl;
 
-            zmq::message_t empty_msg;
-            backend.recv(empty_msg, zmq::recv_flags::none);
-            std::cout << "Received empty message: " << empty_msg.to_string() << std::endl;
+            receive_empty(backend);
+            
+            std::string client_addr = s_recv(backend);
+            std::cout << "Received client address: " << client_addr << std::endl;
 
-            zmq::message_t client_id_msg;
-            backend.recv(client_id_msg, zmq::recv_flags::none);
-            std::cout << "Received client id: " << client_id_msg.to_string() << std::endl;
-
-            zmq::message_t other_empty_msg;
-            backend.recv(other_empty_msg, zmq::recv_flags::none);
-            std::cout << "Received empty message: " << other_empty_msg.to_string() << std::endl;
-
-            zmq::message_t reply_msg;
-            backend.recv(reply_msg, zmq::recv_flags::none);
-            std::cout << "Received reply: " << reply_msg.to_string() << std::endl;
-
-            // Build a reply message
-            frontend.send(client_id_msg, zmq::send_flags::sndmore);
-            frontend.send(zmq::message_t{}, zmq::send_flags::sndmore);
-            frontend.send(reply_msg, zmq::send_flags::none);
-        }
-        if (items [2].revents & ZMQ_POLLIN) {
-            std::string worker_id = s_recv(workerChannel);
-            std::cout << "Received worker id: " << worker_id << std::endl;
-
-            // If worker is not in the list, add it
-            if (workers.find(worker_id) == workers.end()) {
-                std::cout << "Adding worker: " << worker_id << std::endl;
-                workers[worker_id] = "hash";
-                workerChannel.send(zmq::str_buffer("OK"), zmq::send_flags::none);
+            if (client_addr.compare("READY") != 0){
+                receive_empty(backend);
+                std::string reply = s_recv(backend);
+                std::cout << "Received reply: " << reply << std::endl;
+                s_sendmore(frontend, client_addr);
+                s_sendmore(frontend, std::string(""));
+                s_send(frontend, reply);
             }
             else{
-                workerChannel.send(zmq::str_buffer("NOK"), zmq::send_flags::none);
+                /*
+                s_sendmore(backend, worker_id);
+                s_sendmore(backend, std::string(""));
+                s_send(backend, std::string("OK"));
+                */
+                workers[worker_id] = "hash";
             }
         }
     }

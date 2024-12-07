@@ -69,56 +69,39 @@ int main (void)
 
     zmq::context_t context(1);
 
-    std::srand(std::time(0));
-    std::string workerID = "worker"+std::to_string(std::rand());
+    srand(time(NULL));
 
-    zmq::socket_t workerChannel(context, ZMQ_REQ);
-    std::cout << "Worker ID: " << workerID << std::endl;
-    std::cout << "Worker ID set" << std::endl;
-    workerChannel.connect("tcp://localhost:5561");
-    std::cout << "Worker connected" << std::endl;
+    zmq::socket_t socket(context, ZMQ_REQ);
+    std::string zmqID = s_set_id(socket);
+    socket.connect("tcp://localhost:5560");
 
-    std::cout << "Sending message: [" << workerID << "]" << std::endl;
-    s_send(workerChannel, workerID);
-    std::cout << "Message sent" << std::endl;
+    s_send(socket, std::string("READY"));
 
-    std::string reply = s_recv(workerChannel);
-    std::cout << "Received reply: [" << reply << "]" << std::endl;
-    if (reply == "OK") {
-        std::cout << "Worker connected" << std::endl;
-    }
-    else {
-        std::cout << "Couldn't connect worker" << std::endl;
+    /*
+    if (s_recv(socket)!= "OK"){
+        std::cout << "Failed to connect to broker" << std::endl;
         return 1;
     }
+    */
 
-    zmq::socket_t socket(context, ZMQ_DEALER);
-    socket.connect("tcp://localhost:5560");
+    std::cout << "Connected to broker" << std::endl;
 
     while (1) {
         //  Wait for next request from client
-        zmq::message_t worker_id;
-        socket.recv(worker_id, zmq::recv_flags::none);
-        std::cout << "Received worker id: " << worker_id.to_string() << std::endl;
+        std::string address = s_recv(socket);
+        std::cout << "Received address: [" << address << "]" << std::endl;
 
-        zmq::message_t empty_msg;
-        socket.recv(empty_msg, zmq::recv_flags::none);
-        std::cout << "Received empty message: " << empty_msg.to_string() << std::endl;
+        //  Get the empty message
+        std::string empty = s_recv(socket);
+        std::cout << "Received empty message: " << empty << std::endl;
 
-        zmq::message_t client_id;
-        socket.recv(client_id, zmq::recv_flags::none);
-        std::cout << "Received client id: " << client_id.to_string() << std::endl;
-        
-        zmq::message_t request_msg;
-        socket.recv(request_msg, zmq::recv_flags::none);
-        std::cout << "Received request: " << request_msg.to_string() << std::endl;
+        //  Get the request message
+        std::string request_msg = s_recv(socket);
+        std::cout << "Received request: [" << request_msg << "]" << std::endl;
 
-        //std::string received = s_recv (socket);
-        //std::cout << "Received request: [" << received << "]" << std::endl << std::endl;
-
-        // Parse received message
+        // Parse received request
         //Message received(string);
-        nlohmann::json json = nlohmann::json::parse(request_msg.to_string());
+        nlohmann::json json = nlohmann::json::parse(request_msg);
 
         // Build a reply message
         Message reply = handleMessage(json);
@@ -126,12 +109,9 @@ int main (void)
 
         //  Send reply back to client
         std::cout << "Sending reply" << std::endl;
-        socket.send(worker_id, zmq::send_flags::sndmore);
-        std::cout << "Sent client id" << std::endl;
-        socket.send(zmq::message_t{}, zmq::send_flags::sndmore);
-        std::cout << "Sent empty message" << std::endl;
-        socket.send(zmq::buffer(reply.toString()), zmq::send_flags::none);
-        std::cout << "Sent reply" << std::endl;
+        s_sendmore(socket, address);
+        s_sendmore(socket, std::string(""));
+        s_send(socket, reply.toString());
     }
     return 0;
 }
