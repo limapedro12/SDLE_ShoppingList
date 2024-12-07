@@ -69,23 +69,57 @@ int main (void)
 
     zmq::context_t context(1);
 
+    std::srand(std::time(0));
+    std::string workerID = "worker"+std::to_string(std::rand());
+
+    zmq::socket_t workerChannel(context, ZMQ_REQ);
+    std::cout << "Worker ID: " << workerID << std::endl;
+    workerChannel.setsockopt(ZMQ_IDENTITY, workerID.c_str(), workerID.size());
+    std::cout << "Worker ID set" << std::endl;
+    workerChannel.connect("tcp://localhost:5561");
+    std::cout << "Worker connected" << std::endl;
+
+    std::cout << "Sending message: [" << workerID << "]" << std::endl;
+    s_send(workerChannel, workerID);
+    std::cout << "Message sent" << std::endl;
+
+    std::string reply = s_recv(workerChannel);
+    std::cout << "Received reply: [" << reply << "]" << std::endl;
+    if (reply == "OK") {
+        std::cout << "Worker connected" << std::endl;
+    }
+    else {
+        std::cout << "Couldn't connect worker" << std::endl;
+        return 1;
+    }
+
     zmq::socket_t socket(context, ZMQ_REP);
+    socket.setsockopt(ZMQ_IDENTITY, workerID.c_str(), workerID.size());
     socket.connect("tcp://localhost:5560");
 
     while (1) {
         //  Wait for next request from client
-        std::string received = s_recv (socket);
-        std::cout << "Received request: [" << received << "]" << std::endl << std::endl;
+        zmq::message_t client_id;
+        socket.recv(client_id, zmq::recv_flags::none);
+        std::cout << "Received client id: " << client_id.to_string() << std::endl;
+
+        zmq::message_t request_msg;
+        socket.recv(request_msg, zmq::recv_flags::none);
+        std::cout << "Received request: " << request_msg.to_string() << std::endl;
+
+        //std::string received = s_recv (socket);
+        //std::cout << "Received request: [" << received << "]" << std::endl << std::endl;
 
         // Parse received message
         //Message received(string);
-        nlohmann::json json = nlohmann::json::parse(received);
+        nlohmann::json json = nlohmann::json::parse(request_msg.to_string());
 
         // Build a reply message
         Message reply = handleMessage(json);
 
         //  Send reply back to client
-        s_send (socket, reply.toString());
+        socket.send(client_id, zmq::send_flags::sndmore);
+        socket.send(request_msg, zmq::send_flags::none);
     }
     return 0;
 }
