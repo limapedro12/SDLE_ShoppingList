@@ -88,23 +88,23 @@ void mergeShoppingList(json request) {
         // std::cout << request["id"] << std::endl;
         // std::cout << request["data"] << std::endl;
 
-        // ShoppingList oldList(list["id"], list["data"]);
-        // ShoppingList newList(request["id"], request["data"]);
+        ShoppingList oldList(list["id"], list["data"]);
+        ShoppingList newList(request["id"], request["data"]);
 
         // std::cout << "antes merge" << std::endl;
 
-        // oldList.setUserId("Server");
+        oldList.setUserId("Server");
 
-        // ShoppingList listToKeep = oldList.merge(newList);
-        // json listToKeepInJson;
+        ShoppingList listToKeep = oldList.merge(newList);
+        json listToKeepInJson;
 
         // std::cout << "depois merge" << std::endl;
         
-        // listToKeepInJson["id"] = listToKeep.get_id();
-        // listToKeepInJson["data"] = listToKeep.contentsToJSON();
+        listToKeepInJson["id"] = listToKeep.get_id();
+        listToKeepInJson["data"] = listToKeep.contentsToJSON();
 
         ofstream new_file(path);
-        new_file << request.dump(4);
+        new_file << listToKeepInJson.dump(4);
         new_file.close();
 
         cout << "Shopping list updated successfully on node: " << node << endl;
