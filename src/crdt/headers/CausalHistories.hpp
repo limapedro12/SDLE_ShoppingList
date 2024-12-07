@@ -46,6 +46,8 @@ class CausalHistories {
     // check if one pair user id and event number happpens after the current causal history
     bool operator<(pair<string, int> p) const;
 
+    bool contains(pair<string, int> p) const;
+
     // copy the causal history
     CausalHistories copy() const;
 
