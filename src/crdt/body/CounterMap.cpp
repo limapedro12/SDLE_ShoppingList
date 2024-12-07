@@ -8,7 +8,8 @@ CounterMap::CounterMap(){
 CounterMap::CounterMap(json j){
   this->counter_histories = CausalHistories(j["causal_histories"]);
   this->items = map<string, CounterMapInstance>();
-  for (auto item : j.items()){
+  json dataMap = j["map"];
+  for (auto item : dataMap.items()){
     this->items[item.key()] = {CRDTCounter(item.value()["counter"]), item.value()["user_id"], item.value()["context_num"]};
   }
 }
@@ -16,13 +17,15 @@ CounterMap::CounterMap(json j){
 json CounterMap::toJSON(){
   json j;
   j["causal_histories"] = this->counter_histories.toJSON();
+  json dataMap;
   for (auto item : this->items)
   {
-    j[item.first] = {
+    dataMap[item.first] = {
         {"counter", item.second.counter.toJSON()},
         {"user_id", item.second.user_id},
         {"context_num", item.second.context_num}};
   }
+  j["map"] = dataMap;
   return j;
 }
 
