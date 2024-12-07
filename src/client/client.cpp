@@ -236,10 +236,11 @@ int main() {
     zmq::context_t context(1);                     // 1 thread in the context
     zmq::socket_t socket(context, ZMQ_REQ);     // Create a request socket
 
-    socket.connect("tcp://localhost:5559");
-
     // Load the user id
     loadUser();
+
+    socket.set(zmq::sockopt::routing_id, user_id);
+    socket.connect("tcp://localhost:5559");
 
 /*
     Message creation("create", list_id, {});

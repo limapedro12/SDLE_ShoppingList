@@ -51,18 +51,31 @@ int main (void)
             }
         }
         if (items [1].revents & ZMQ_POLLIN) {
-            zmq::message_t client_id;
-            backend.recv(client_id, zmq::recv_flags::none);
-            std::cout << "Received client id: " << client_id.to_string() << std::endl;
+            zmq::message_t worker_id_msg;
+            backend.recv(worker_id_msg, zmq::recv_flags::none);
+            std::string worker_id = worker_id_msg.to_string();
+            std::cout << "Received worker id: " << worker_id << std::endl;
 
-            zmq::message_t request_msg;
-            backend.recv(request_msg, zmq::recv_flags::none);
-            std::cout << "Received request: " << request_msg.to_string() << std::endl;
+            zmq::message_t empty_msg;
+            backend.recv(empty_msg, zmq::recv_flags::none);
+            std::cout << "Received empty message: " << empty_msg.to_string() << std::endl;
+
+            zmq::message_t client_id_msg;
+            backend.recv(client_id_msg, zmq::recv_flags::none);
+            std::cout << "Received client id: " << client_id_msg.to_string() << std::endl;
+
+            zmq::message_t other_empty_msg;
+            backend.recv(other_empty_msg, zmq::recv_flags::none);
+            std::cout << "Received empty message: " << other_empty_msg.to_string() << std::endl;
+
+            zmq::message_t reply_msg;
+            backend.recv(reply_msg, zmq::recv_flags::none);
+            std::cout << "Received reply: " << reply_msg.to_string() << std::endl;
 
             // Build a reply message
-            frontend.send(client_id, zmq::send_flags::sndmore);
+            frontend.send(client_id_msg, zmq::send_flags::sndmore);
             frontend.send(zmq::message_t{}, zmq::send_flags::sndmore);
-            frontend.send(request_msg, zmq::send_flags::none);
+            frontend.send(reply_msg, zmq::send_flags::none);
         }
         if (items [2].revents & ZMQ_POLLIN) {
             std::string worker_id = s_recv(workerChannel);
