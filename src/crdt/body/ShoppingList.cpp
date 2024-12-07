@@ -32,7 +32,8 @@ void ShoppingList::decrease(string item){
   if (user_id == ""){
     throw std::invalid_argument("user_id not set \n Please call setUserId() first");
   }
-  items.decrease(item, user_id);
+  if(items.get_quantity(item) >= 1)
+    items.decrease(item, user_id);
 }
 
 void ShoppingList::decrease(string item, int n){
@@ -43,10 +44,11 @@ void ShoppingList::decrease(string item, int n){
     return;
   }
 
-  if (items.get_quantity(item) > n)
+  int quantity = items.get_quantity(item);
+  if (quantity > n)
     items.decrease(item, user_id);
   else
-    items.remove(item, user_id);
+    items.decrease(item, quantity, user_id);
 }
 
 void ShoppingList::set_value(string item, int value){
@@ -135,6 +137,7 @@ ShoppingList::ShoppingList(string id, json j){
 //   shopping_list.add("apple");
 //   shopping_list.add("banana");
 //   shopping_list.add("apple", 3);
+//   shopping_list.add("pinapple");
 
 //   cout << shopping_list.print() << endl
 //        << endl;
@@ -145,9 +148,11 @@ ShoppingList::ShoppingList(string id, json j){
 //   shopping_list_copy.add("apple", 2);
 //   shopping_list_copy.add("banana", 20);
 //   shopping_list_copy.decrease("banana", 21);
+//   shopping_list_copy.remove("pinapple");
 
 //   shopping_list.decrease("apple");
 //   shopping_list.decrease("banana", 2);
+//   shopping_list.add("pinapple");
 
 //   cout << "Shopping list after user 1:" << endl;
 //   cout << shopping_list.print() << endl
@@ -157,8 +162,14 @@ ShoppingList::ShoppingList(string id, json j){
 //   cout << shopping_list_copy.print() << endl
 //        << endl;
 
+//   // cout << shopping_list_copy.contentsToJSON().dump(4) << endl;
+
 //   cout << "Merged shopping list:" << endl;
 //   cout << shopping_list.merge(shopping_list_copy).print() << endl
 //        << endl;
+       
+//   // ShoppingList jsonShopping("123", shopping_list_copy.contentsToJSON());
 
+//   // cout << "JSON" << endl;
+//   // cout << jsonShopping.contentsToJSON().dump(4) << endl;
 // }

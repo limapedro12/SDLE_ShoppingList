@@ -174,7 +174,8 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
     }
 }
 
-int alterListUI(ShoppingList* shoppingList){
+int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
+
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add an item" << std::endl;
     std::cout << "2: Remove an item" << std::endl;
@@ -187,12 +188,20 @@ int alterListUI(ShoppingList* shoppingList){
         std::cout << "Enter the item to add: ";
         std::cin >> item;
         shoppingList->add(item);
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 2){
         std::string item;
         std::cout << "Enter the item to remove: ";
         std::cin >> item;
         shoppingList->decrease(item);
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 3){
         std::string item;
@@ -202,6 +211,10 @@ int alterListUI(ShoppingList* shoppingList){
         std::cout << "Enter the new quantity: ";
         std::cin >> quantity;
         shoppingList->set_value(item, quantity);
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 4){
         // saving to machine routine, it's pretty simple but we could wrap it in a function for clarity
@@ -274,7 +287,7 @@ int main() {
                 current_shopping_list = selectListUI(shopping_lists);
                 break;
             case LIST_SELECTED:
-                alterListUI(current_shopping_list);
+                alterListUI(current_shopping_list, socket);
                 break;
             case SHUTDOWN:
                 std::cout << "See you next time!" << std::endl;
@@ -284,4 +297,47 @@ int main() {
 
     return 0;
 }
+
+
+
+// #include "../libs/zhelpers.hpp"
+// #include "../libs/message.h"
+// #include <iostream>
+// #include <string>
+// #include <vector>
+
+// int main() {
+//     // Initialize ZeroMQ context and socket
+//     zmq::context_t context(1);                     // 1 thread in the context
+//     zmq::socket_t socket(context, ZMQ_REQ);     // Create a request socket
+
+//     socket.connect("tcp://localhost:5559");
+
+//     for (int request_nbr = 0; request_nbr < 10; ++request_nbr) {
+//         // Create the message object
+//         //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
+//         //Message message("helloWorld", "mrBombastic2", data);
+//         ShoppingList shopping_list("1");
+//         shopping_list.setUserId("1");
+//         shopping_list.add("apple");
+//         shopping_list.add("banana");
+//         shopping_list.add("apple", 3);
+
+//         shopping_list.fresh();
+//         shopping_list.add("apple", 2);
+//         Message message(shopping_list, "helloWorld");
+
+
+//         // Serialize the message into a string and send it
+//         s_send(socket, message.toString());
+
+//         // Receive the reply
+//         std::string reply_str = s_recv(socket);
+
+//         // Print the received reply
+//         std::cout << "Received reply " << request_nbr << " [" << reply_str << "]" << std::endl;
+//     }
+//     return 0;
+// }
+
 

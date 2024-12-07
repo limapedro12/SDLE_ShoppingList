@@ -6,9 +6,16 @@ CounterMap::CounterMap(){
 }
 
 CounterMap::CounterMap(json j){
+  //check if json is null or empty
+  if (j.is_null() || j.empty()){
+    this->counter_histories = CausalHistories();
+    this->items = map<string, CounterMapInstance>();
+    return;
+  }
   this->counter_histories = CausalHistories(j["causal_histories"]);
   this->items = map<string, CounterMapInstance>();
-  for (auto item : j.items()){
+  json dataMap = j["map"];
+  for (auto item : dataMap.items()){
     this->items[item.key()] = {CRDTCounter(item.value()["counter"]), item.value()["user_id"], item.value()["context_num"]};
   }
 }
@@ -16,41 +23,45 @@ CounterMap::CounterMap(json j){
 json CounterMap::toJSON(){
   json j;
   j["causal_histories"] = this->counter_histories.toJSON();
+  json dataMap;
   for (auto item : this->items)
   {
-    j[item.first] = {
+    dataMap[item.first] = {
         {"counter", item.second.counter.toJSON()},
         {"user_id", item.second.user_id},
         {"context_num", item.second.context_num}};
   }
+  j["map"] = dataMap;
   return j;
 }
 
 void CounterMap::add(string item, string user_id){
-  if (this->items.find(item) == this->items.end())
-  {
-    this->items[item] = {CRDTCounter(), user_id, this->counter_histories.get(user_id)};
-  }
-  this->items[item].counter.incr(user_id);
   this->counter_histories.add(user_id);
+  if (this->items.find(item) == this->items.end())
+    this->items[item] = {CRDTCounter(), user_id, this->counter_histories.get(user_id)};
+  
+
+  this->items[item].counter.incr(user_id);
+  this->items[item].user_id = user_id;
+  this->items[item].context_num = this->counter_histories.get(user_id);
 }
 
 void CounterMap::add(string item, int n, string user_id)
 {
   this->counter_histories.add(user_id);
   if (this->items.find(item) == this->items.end())
-  {
     this->items[item] = {CRDTCounter(), user_id, this->counter_histories.get(user_id)};
-  }
+  
   this->items[item].counter.incr(n, user_id);
+  this->items[item].user_id = user_id;
+  this->items[item].context_num = this->counter_histories.get(user_id);
 }
 
 void CounterMap::decrease(string item, string user_id)
 {
   if (this->items.find(item) == this->items.end())
-  {
     return;
-  }
+  
   this->counter_histories.add(user_id);
   this->items[item].counter.decr(user_id);
   this->items[item].user_id = user_id;
@@ -59,9 +70,8 @@ void CounterMap::decrease(string item, string user_id)
 
 void CounterMap::decrease(string item, int n, string user_id){
   if (this->items.find(item) == this->items.end())
-  {
     return;
-  }
+  
   this->counter_histories.add(user_id);
   this->items[item].counter.decr(n, user_id);
   this->items[item].user_id = user_id;
@@ -70,9 +80,8 @@ void CounterMap::decrease(string item, int n, string user_id){
 
 void CounterMap::set_value(string item, int value, string user_id){
   if (this->items.find(item) == this->items.end())
-  {
     this->items[item] = {CRDTCounter(), user_id, this->counter_histories.get(user_id)};
-  }
+  
   this->counter_histories.add(user_id);
   this->items[item].counter.set_value(value, user_id);
   this->items[item].user_id = user_id;
@@ -81,9 +90,8 @@ void CounterMap::set_value(string item, int value, string user_id){
 
 void CounterMap::remove(string item, string user_id){
   if (this->items.find(item) == this->items.end())
-  {
     return;
-  }
+  
   this->counter_histories.add(user_id);
   this->items[item].counter.reset();
   this->items[item].user_id = user_id;
@@ -92,9 +100,8 @@ void CounterMap::remove(string item, string user_id){
 
 int CounterMap::get_quantity(string item){
   if (this->items.find(item) == this->items.end())
-  {
     return 0;
-  }
+  
   return this->items[item].counter.value();
 }
 
@@ -135,10 +142,10 @@ CounterMap CounterMap::merge(CounterMap other, string userId){
       pair<string, int> other_causal = {other.items[item.first].user_id, other.items[item.first].context_num};
       if (causalThis == other_causal)
         new_items[item.first] = item.second;
-      // else if (this->counter_histories < other_causal)
-      //   new_items[item.first] = other.items[item.first];
-      // else if (other.counter_histories < causalThis)
-      //   new_items[item.first] = item.second;
+      else if (this->counter_histories.contains(other_causal))
+        new_items[item.first] = item.second;
+      else if (other.counter_histories.contains(causalThis))
+        new_items[item.first] = other.items[item.first];
       else
         new_items[item.first] = {item.second.counter.merge(other.items[item.first].counter), userId, this->counter_histories.get(userId)};
     }
@@ -170,8 +177,11 @@ map<string, int> CounterMap::get_items_with_quantity(){
 
 string CounterMap::print(){
   string result = "{ ";
-  for (auto &item : this->items)
-    result += item.first + ": " + to_string(item.second.counter.value()) + ", ";
+  for (auto &item : this->items){
+    int val = item.second.counter.value();
+    if(val > 0)
+      result += item.first + ": " + to_string(val) + ", ";
+  }
   result += " }";
   return result;
 }

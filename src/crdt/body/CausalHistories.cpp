@@ -84,6 +84,10 @@ bool CausalHistories::operator<(pair<string, int> p) const{
             (causalHistory.find(p.first)->second < p.second);
 }
 
+bool CausalHistories::contains(pair<string, int> p) const {
+    return causalHistory.find(p.first) != causalHistory.end() && causalHistory.find(p.first)->second > p.second;
+}
+
 CausalHistories CausalHistories::copy() const{
     CausalHistories ch;
     ch.causalHistory = causalHistory;
