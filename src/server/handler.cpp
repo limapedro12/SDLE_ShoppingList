@@ -1,25 +1,17 @@
 #include "handler.hpp"
-#include "consistentHashing.hpp"
 
-// MD5 encrypter for hashing
-md5 encrypter;
+namespace fs = std::filesystem;
 
-extern ConsistentHashRing hashRing; 
+void createShoppingList(json request, const std::string& workerID) {
+    std::string dirPath = "nodes/" + workerID + "/lists";
+    std::string filePath = dirPath + "/" + request["id"].get<std::string>() + ".json";
 
-void createShoppingList(json request) {
-    int counter = 1;
-    // Compute the node using consistent hashing
-    string node = hashRing.getNode(request["id"].get<string>())->id;
+    // Ensure the directory exists
+    fs::create_directories(dirPath);
 
-    // Construct the path for the node and shopping list file
-    string path = "nodes/" + node + "/lists/" + request["id"].get<string>() + ".json";
-
-    ifstream file(path);
-    while (file.is_open()) {
-        file.close();
-        counter++;
-        path = "nodes/" + node + "/lists/" + request["id"].get<string>() + ".json";
-        file.open(path);
+    if (fs::exists(filePath)) {
+        std::cerr << "Shopping list already exists with ID: " << request["id"].get<std::string>() << std::endl;
+        return;
     }
 
     json list = {
@@ -27,88 +19,63 @@ void createShoppingList(json request) {
         {"data", json::object()}
     };
 
-    ofstream new_file(path);
+    std::ofstream new_file(filePath);
     new_file << list.dump(4);
     new_file.close();
 
-    cout << "Shopping list created with unique ID: " << request["id"].get<string>() << " on node: " << node << endl;
+    std::cout << "Shopping list created with unique ID: " << request["id"].get<std::string>() << std::endl;
 }
 
-json getShoppingList(json request) {
-    // Compute the node using consistent hashing
-    string node = hashRing.getNode(request["id"].get<string>())->id;
 
-    // Construct the path for the node and shopping list file
-    string path = "nodes/" + node + "/lists/" + request["id"].get<string>() + ".json";
+json getShoppingList(json request, const std::string& workerID) {
+    std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
-    ifstream file(path);
-
-    if (file.is_open()) {
-        json list;
-        file >> list;
-        file.close();
-        return list;
-    } else {
-        cout << "Failed to open the file on node: " << node << ". Ensure the unique ID is correct." << endl;
+    if (!fs::exists(filePath)) {
+        std::cerr << "Shopping list not found for ID: " << request["id"].get<std::string>() << std::endl;
+        return json();
     }
-    return json();
+
+    std::ifstream file(filePath);
+    json list;
+    file >> list;
+    file.close();
+
+    return list;
 }
 
-void eraseShoppingList(json request) {
-    // Compute the node using consistent hashing
-    string node = hashRing.getNode(request["id"].get<string>())->id;
+void eraseShoppingList(json request, const std::string& workerID) {
+    std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
-    // Construct the path for the node and shopping list file
-    string path = "nodes/" + node + "/lists/" + request["id"].get<string>() + ".json";
-
-    if (remove(path.c_str()) == 0) {
-        cout << "Shopping list erased successfully from node: " << node << endl;
+    if (fs::remove(filePath)) {
+        std::cout << "Shopping list erased successfully: " << request["id"].get<std::string>() << std::endl;
     } else {
-        cout << "Failed to erase the file from node: " << node << ". Ensure the unique ID is correct." << endl;
+        std::cerr << "Failed to erase shopping list with ID: " << request["id"].get<std::string>() << std::endl;
     }
 }
 
-void mergeShoppingList(json request) {
-    // Compute the node using consistent hashing
-    string node = hashRing.getNode(request["id"].get<string>())->id;
+void mergeShoppingList(json request, const std::string& workerID) {
+    std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
-    // Construct the path for the node and shopping list file
-    string path = "nodes/" + node + "/lists/" + request["id"].get<string>() + ".json";
-    ifstream file(path);
-
-    if (file.is_open()) {
-        json list;
-        file >> list;
-        file.close();
-
-        // std::cout << "Merging shopping list with unique ID: " << request["id"].get<string>() << " on node: " << node << std::endl;
-
-        // std::cout << list["id"] << std::endl;
-        // std::cout << list["data"] << std::endl;
-        // std::cout << request["id"] << std::endl;
-        // std::cout << request["data"] << std::endl;
-
-        ShoppingList oldList(list["id"], list["data"]);
-        ShoppingList newList(request["id"], request["data"]);
-
-        // std::cout << "antes merge" << std::endl;
-
-        oldList.setUserId("Server");
-
-        ShoppingList listToKeep = oldList.merge(newList);
-        json listToKeepInJson;
-
-        // std::cout << "depois merge" << std::endl;
-        
-        listToKeepInJson["id"] = listToKeep.get_id();
-        listToKeepInJson["data"] = listToKeep.contentsToJSON();
-
-        ofstream new_file(path);
-        new_file << listToKeepInJson.dump(4);
-        new_file.close();
-
-        cout << "Shopping list updated successfully on node: " << node << endl;
-    } else {
-        cout << "Failed to open the file on node: " << node << ". Ensure the unique ID is correct." << endl;
+    if (!fs::exists(filePath)) {
+        std::cerr << "Shopping list not found for merging: " << request["id"].get<std::string>() << std::endl;
+        return;
     }
+
+    std::ifstream file(filePath);
+    json old_list;
+    file >> old_list;
+    file.close();
+
+    json new_data = request["data"];
+    json& old_data = old_list["data"];
+
+    for (auto& [key, value] : new_data.items()) {
+        old_data[key] = value; // Perform merging logic
+    }
+
+    std::ofstream new_file(filePath);
+    new_file << old_list.dump(4);
+    new_file.close();
+
+    std::cout << "Shopping list merged successfully for ID: " << request["id"].get<std::string>() << std::endl;
 }

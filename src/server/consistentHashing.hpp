@@ -16,6 +16,7 @@ private:
 public:
     void addNode(Node* node);
     Node* getNode(const std::string& key);
+    bool isEmpty();
 };
 
 class Node {

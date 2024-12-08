@@ -161,4 +161,5 @@ int terminal(){
       cout << "Invalid command" << endl;
     }
   }
+  return 0;
 }

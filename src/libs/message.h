@@ -5,7 +5,6 @@
 #include "../crdt/headers/ShoppingList.hpp"
 
 enum Operation {
-    HELLO_WORLD,
     CREATE,
     GET,
     MERGE,

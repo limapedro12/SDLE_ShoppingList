@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -g -std=c++17
 
-.PHONY: all client server broker clean crdt
+.PHONY: all client broker server clean crdt
 
 all: client server broker
 
@@ -16,11 +16,11 @@ LIB_OBJ = $(LIB_SRC:.cpp=.o)
 client: ./client/client.cpp $(LIB_OBJ)
 	$(CXX) $(CXXFLAGS) ./client/client.cpp $(LIB_OBJ) -o client.out -lzmq -lssl -lcrypto
 
+broker: ./server/broker.cpp ./server/consistentHashing.cpp $(LIB_OBJ)
+	$(CXX) $(CXXFLAGS) ./server/broker.cpp ./server/consistentHashing.cpp $(LIB_OBJ) -o broker.out -lzmq -lssl -lcrypto
+
 server: ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consistentHashing.cpp $(LIB_OBJ)
 	$(CXX) $(CXXFLAGS) ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consistentHashing.cpp $(LIB_OBJ) -o server.out -lzmq -lssl -lcrypto
-
-broker: ./server/broker.cpp $(LIB_OBJ)
-	$(CXX) $(CXXFLAGS) ./server/broker.cpp $(LIB_OBJ) -o broker.out -lzmq
 
 crdt:
 	$(CXX) $(CXXFLAGS) ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp -o crdt.out -lzmq

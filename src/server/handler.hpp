@@ -9,7 +9,7 @@ using json = nlohmann::json;
 using namespace std;
 
 // Function declarations
-void createShoppingList(json request);
-json getShoppingList(json request);
-void eraseShoppingList(json request);
-void mergeShoppingList(json request);
+void createShoppingList(json request, const std::string& workerID);
+json getShoppingList(json request, const std::string& workerID);
+void eraseShoppingList(json request, const std::string& workerID);
+void mergeShoppingList(json request, const std::string& workerID);

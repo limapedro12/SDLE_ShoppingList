@@ -4,41 +4,21 @@
 #include <string>
 #include <iostream>
 #include "handler.hpp"
-#include "consistentHashing.hpp"
-
-ConsistentHashRing hashRing;
-
-// Initialize nodes for the ring
-void initializeNodes() {
-    Node* node1 = new Node("Node1");
-    Node* node2 = new Node("Node2");
-    Node* node3 = new Node("Node3");
-
-    hashRing.addNode(node1);
-    hashRing.addNode(node2);
-    hashRing.addNode(node3);
-
-    std::cout << "Nodes added to the ring: Node1, Node2, Node3" << std::endl;
-}
 
 /**
  * @brief Handle the received message
  */
-Message handleMessage(nlohmann::json received){
+Message handleMessage(nlohmann::json received, const std::string& workerID){
     std::unordered_map<std::string, int> data = {};
     std::string operation = received["operation"]; // its worth looking into an enum (do those even exist in c++?)
     std::string id = received["id"];
-    if (operation == "helloWorld"){
-        data = {{"Here", 1}, {"Is", 2}, {"Data", 3}};
-        return Message(operation, id, data);
-    }
-    else if (operation == "create"){
-        //createShoppingList(received);
+    if (operation == "create"){
+        createShoppingList(received, workerID);
         data = {{"Success", 1}};
         return Message("create", id, data);
     }
     else if (operation == "get"){
-        json rep = getShoppingList(received);
+        json rep = getShoppingList(received, workerID);
         if (rep.empty()){
             data = {{"Error", 1}};
             return Message("error", id, data);
@@ -47,12 +27,12 @@ Message handleMessage(nlohmann::json received){
         return Message("get", id, data);
     }
     else if (operation == "erase"){
-        eraseShoppingList(received);
+        eraseShoppingList(received, workerID);
         data = {{"Success", 1}};
         return Message("erase", id, data);
     }
     else if (operation == "merge"){
-        mergeShoppingList(received);
+        mergeShoppingList(received, workerID);
         data = {{"Success", 1}};
         return Message("merge", id, data);
     } 
@@ -65,8 +45,6 @@ Message handleMessage(nlohmann::json received){
 
 int main (void) 
 {
-    initializeNodes();
-
     zmq::context_t context(1);
 
     srand(time(NULL));
@@ -104,7 +82,7 @@ int main (void)
         nlohmann::json json = nlohmann::json::parse(request_msg);
 
         // Build a reply message
-        Message reply = handleMessage(json);
+        Message reply = handleMessage(json, zmqID);
         std::cout << "Reply: " << reply.toString() << std::endl;
 
         //  Send reply back to client

@@ -21,6 +21,10 @@ void ConsistentHashRing::addNode(Node* node) {
     ring[hash] = node;
 }
 
+bool ConsistentHashRing::isEmpty() {
+    return ring.empty();
+}
+
 Node* ConsistentHashRing::getNode(const std::string& key) {
     size_t hash = hashFunction(key);
     auto it = ring.upper_bound(hash);
