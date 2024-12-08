@@ -113,7 +113,7 @@ CRDTCounter CounterMap::operator[](string item){
 }
 
 bool CounterMap::contains(string item){
-  return (this->items.find(item) != this->items.end()) || (this->get_quantity(item) == 0);
+  return (this->items.find(item) != this->items.end()) && (this->get_quantity(item) != 0);
 }
 
 CounterMap CounterMap::copy(){
