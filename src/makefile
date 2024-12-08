@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -g -std=c++17
 
-.PHONY: all client broker server clean crdt
+.PHONY: all client broker server clean test
 
 all: client server broker
 
@@ -22,8 +22,8 @@ broker: ./server/broker.cpp ./server/consistentHashing.cpp $(LIB_OBJ)
 server: ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consistentHashing.cpp $(LIB_OBJ)
 	$(CXX) $(CXXFLAGS) ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consistentHashing.cpp $(LIB_OBJ) -o server.out -lzmq -lssl -lcrypto
 
-crdt:
-	$(CXX) $(CXXFLAGS) ./crdt/body/CausalHistories.cpp ./crdt/body/CLI.cpp ./crdt/body/Counter.cpp ./crdt/body/ShoppingList.cpp -o crdt.out -lzmq
+test:
+	$(CXX) $(CXXFLAGS) ./test/test.cpp $(LIB_OBJ) -o test.out -lzmq -lssl -lcrypto
 
 clean:
 	rm -f *.out $(LIB_OBJ)
