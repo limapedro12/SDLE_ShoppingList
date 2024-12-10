@@ -25,5 +25,8 @@ server: ./server/server.cpp ./server/handler.cpp ./server/md5.cpp ./server/consi
 test:
 	$(CXX) $(CXXFLAGS) ./test/test.cpp $(LIB_OBJ) -o test.out -lzmq -lssl -lcrypto
 
+subscriber:
+	$(CXX) $(CXXFLAGS) ./client/subscriber.cpp $(LIB_OBJ) -o subscriber.out -lzmq -lssl -lcrypto
+
 clean:
 	rm -f *.out $(LIB_OBJ)

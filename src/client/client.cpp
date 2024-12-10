@@ -64,7 +64,7 @@ vector<ShoppingList> loadLists(){
                     nlohmann::json json;
                     file >> json;
 
-                    ShoppingList shopping_list(listId, json["data"]);
+                    ShoppingList shopping_list(listId, json);
                     shopping_list.setUserId(user_id);
                     shopping_lists.push_back(shopping_list);
                 }
@@ -190,20 +190,12 @@ int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
         std::cout << "Enter the item to add: ";
         std::cin >> item;
         shoppingList->add(item);
-
-        //send to server
-        Message mergeMessage(*shoppingList, "merge");
-        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 2){
         std::string item;
         std::cout << "Enter the item to remove: ";
         std::cin >> item;
         shoppingList->decrease(item);
-
-        //send to server
-        Message mergeMessage(*shoppingList, "merge");
-        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 3){
         std::string item;
@@ -213,16 +205,20 @@ int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
         std::cout << "Enter the new quantity: ";
         std::cin >> quantity;
         shoppingList->set_value(item, quantity);
-
-        //send to server
-        Message mergeMessage(*shoppingList, "merge");
-        s_send(socket, mergeMessage.toString());
     }
     else if (selection == 4){
+        shoppingList->fresh();
+
         // saving to machine routine, it's pretty simple but we could wrap it in a function for clarity
         std::ofstream file("./client/lists/" + shoppingList->get_id() + ".json");
         file << shoppingList->contentsToJSON();
         file.close();
+
+        //send to server
+        Message mergeMessage(*shoppingList, "merge");
+        s_send(socket, mergeMessage.toString());
+        s_recv(socket);
+
         shoppingList = nullptr;
         state = NO_LIST;
     }

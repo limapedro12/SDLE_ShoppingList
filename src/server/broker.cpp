@@ -1,4 +1,5 @@
 #include "../libs/zhelpers.hpp"
+#include "../libs/message.h"
 #include "consistentHashing.hpp"
 #include <filesystem>
 #include <unordered_map>
@@ -31,13 +32,26 @@ void initializeWorkerDirectory(const std::string& worker_id) {
     }
 }
 
+void sendPub(const std::string &message, zmq::socket_t &publisher){
+    json json_message = json::parse(message);
+    std::string operation = json_message["operation"];
+    std::string list_id = json_message["id"];
+
+    if (operation == "merge"){
+        s_sendmore(publisher, list_id);
+        s_send(publisher, message);
+    }
+}
+
 int main(void) {
     // Prepare context and sockets
     zmq::context_t context(1);
     zmq::socket_t frontend(context, ZMQ_ROUTER);
     zmq::socket_t backend(context, ZMQ_ROUTER);
+    zmq::socket_t publisher(context, ZMQ_PUB);
     zmq_bind(frontend, "tcp://*:5559");
     zmq_bind(backend, "tcp://*:5560");
+    zmq_bind(publisher, "tcp://*:5561");
 
     zmq_pollitem_t items[] = {
         { frontend, 0, ZMQ_POLLIN, 0 },
@@ -68,6 +82,8 @@ int main(void) {
             } else {
                 std::cerr << "No workers available to handle request." << std::endl;
             }
+
+            sendPub(request, publisher);
         }
 
         if (items[1].revents & ZMQ_POLLIN) {
