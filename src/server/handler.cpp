@@ -57,8 +57,9 @@ void mergeShoppingList(json request, const std::string& workerID) {
     std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
     if (!fs::exists(filePath)) {
-        std::cerr << "Shopping list not found for merging: " << request["id"].get<std::string>() << std::endl;
-        return;
+        std::cout << "Shopping list not found for merging: " << request["id"].get<std::string>() << std::endl;
+        std::cout << "Creating new shopping list with ID: " << request["id"].get<std::string>() << std::endl;
+        createShoppingList(request, workerID);
     }
 
     std::ifstream file(filePath);

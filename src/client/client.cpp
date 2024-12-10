@@ -56,6 +56,7 @@ vector<ShoppingList> loadLists(){
         for (const auto & entry : std::filesystem::directory_iterator(listFolder)){
             if (entry.is_regular_file() && entry.path().extension() == ".json"){
                 std::string listId = entry.path().filename().string();
+                listId.erase(listId.length() - 5, 5);
 
                 std::ifstream file(entry.path());
 
@@ -64,6 +65,7 @@ vector<ShoppingList> loadLists(){
                     file >> json;
 
                     ShoppingList shopping_list(listId, json["data"]);
+                    shopping_list.setUserId(user_id);
                     shopping_lists.push_back(shopping_list);
                 }
                 else{
