@@ -20,7 +20,7 @@ void receiveSubscriptions(zmq::socket_t &subscriber, string userId){
         ShoppingList received_list(address, j_data);
         received_list.setUserId(userId);
 
-        received_list.add("mergado");
+        // received_list.add("mergado");
 
         // Lock the mutex before accessing the shared map
         std::lock_guard<std::mutex> lock(all_received_lists_mutex);
