@@ -16,9 +16,14 @@ void receiveSubscriptions(zmq::socket_t &subscriber, string userId){
         // std::cout << "[" << address << "] " << contents << std::endl;
 
         json j = json::parse(contents);
+        // cout << j.dump(4) << endl;
+
         json j_data = j["data"];
+        // cout << "1" << endl;
         ShoppingList received_list(address, j_data);
+        // cout << "2" << endl;
         received_list.setUserId(userId);
+        // cout << "3" << endl;
 
         // received_list.add("mergado");
 

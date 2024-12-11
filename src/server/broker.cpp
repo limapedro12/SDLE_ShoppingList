@@ -85,9 +85,9 @@ int main(void) {
                 s_sendmore(frontend, std::string(""));
                 std::string reply = "{'No workers available to handle request.': 1}";
                 s_send(frontend, reply);
+                
+                sendPub(request, publisher);
             }
-
-            sendPub(request, publisher);
         }
 
         if (items[1].revents & ZMQ_POLLIN) {
@@ -111,13 +111,20 @@ int main(void) {
                 std::cout << "Worker registered and directories initialized: " << worker_id << std::endl;
             } else {
                 // Handle worker reply
+
+                cout << "Received reply from worker: " << worker_id << std::endl;
                 receive_empty(backend);
                 std::string reply = s_recv(backend);
                 std::cout << "Received reply from worker: " << worker_id << std::endl;
 
+                // Forward the reply to the client
+                std::cout << "Forwarding reply to client: " << client_addr << std::endl;
+
                 s_sendmore(frontend, client_addr);
                 s_sendmore(frontend, std::string(""));
                 s_send(frontend, reply);
+
+                sendPub(reply, publisher);
             }
         }
     }
