@@ -13,12 +13,14 @@ enum states {
     NO_LIST,
     SELECTING_LIST,
     LIST_SELECTED,
-    SHUTDOWN
+    SHUTDOWN,
+    SETTINGS
 };
 
 states state = NO_LIST;
 std::string user_id;
 json j;
+std::unordered_map<std::string, bool> settings;
 
 void loadUser(){
     std::ifstream file2("server/number.json");
@@ -35,6 +37,13 @@ void loadUser(){
         user_id = encrypter1.encrypt(std::to_string(number));
         // Write the user_id to the info.json file with the key user_id
         json user_id_json = {{"user_id", user_id}};
+
+        // add basic settings
+        user_id_json["settings"]["automatic_push"] = true;
+        user_id_json["settings"]["automatic_pull"] = true;
+        settings["automatic_push"] = true;
+        settings["automatic_pull"] = true;
+
         file << user_id_json;
         file.close();
         // Add the new user to user_numbers
@@ -45,6 +54,8 @@ void loadUser(){
         json client_json;
         file >> client_json;
         user_id = client_json["user_id"];
+        settings["automatic_push"] = client_json["settings"]["automatic_push"];
+        settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
         file.close();
     }
 }
@@ -140,7 +151,8 @@ int createList(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
 states mainMenuUI(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
     std::cout << std::endl << "1: Create a new list" << std::endl;
     std::cout << "2: Select a list" << std::endl;
-    std::cout << "3: Exit" << std::endl;
+    std::cout << "3: Settings" << std::endl;
+    std::cout << "4: Exit" << std::endl;
     int selection;
     std::cin >> selection;
     if (selection == 1){
@@ -151,6 +163,9 @@ states mainMenuUI(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
         return SELECTING_LIST;
     }
     else if (selection == 3){
+        return SETTINGS;
+    }
+    else if (selection == 4){
         return SHUTDOWN;
     }
     else{
@@ -161,43 +176,62 @@ states mainMenuUI(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
 
 ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
     std::cout << std::endl << "Select a list: " << std::endl;
+    std::cout << "0: Go back" << std::endl;
     for (int i = 0; i < shopping_lists.size(); i++){
-        std::cout << i << ": " << shopping_lists[i].get_id() << std::endl;
+        std::cout << i+1 << ": " << shopping_lists[i].get_id() << std::endl;
     }
     int selection;
     std::cin >> selection;
-    if (selection < 0 || selection >= shopping_lists.size()){
+    if (selection < 0 || selection > shopping_lists.size()){
         std::cerr << "Invalid selection" << std::endl;
+        return nullptr;
+    }
+    else if (selection == 0) {
+        state = NO_LIST;
         return nullptr;
     }
     else{
         state = LIST_SELECTED;
-        return &shopping_lists[selection];
+        return &shopping_lists[selection-1];
     }
 }
 
-int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
+int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::socket_t& socket){
 
     std::cout << std::endl << shoppingList->print() << std::endl;
-    std::cout << "1: Add an item" << std::endl;
-    std::cout << "2: Remove an item" << std::endl;
-    std::cout << "3: Change the quantity of an item" << std::endl;
-    std::cout << "4: Back" << std::endl;
+    std::cout << "1: Add/increase an item" << std::endl;
+    std::cout << "2: Decrease an item" << std::endl;
+    std::cout << "3: Remove an item" << std::endl;
+    std::cout << "4: Change the quantity of an item" << std::endl;
+    settings["automatic_push"] ? std::cout << "5: Save, push list, and go back" << std::endl : std::cout << "5: Save and go back" << std::endl;
+    std::cout << "6: Go back without saving" << std::endl;
     int selection;
     std::cin >> selection;
     if (selection == 1){
         std::string item;
-        std::cout << "Enter the item to add: ";
+        std::cout << "Enter the item to add or increase: ";
         std::cin >> item;
-        shoppingList->add(item);
+        std::cout << "Enter the quantity: ";
+        int quantity;
+        std::cin >> quantity;
+        shoppingList->add(item, quantity);
     }
     else if (selection == 2){
         std::string item;
-        std::cout << "Enter the item to remove: ";
+        std::cout << "Enter the item to decrease: ";
         std::cin >> item;
-        shoppingList->decrease(item);
+        std::cout << "Enter the quantity: ";
+        int quantity;
+        std::cin >> quantity;
+        shoppingList->decrease(item, quantity);
     }
     else if (selection == 3){
+        std::string item;
+        std::cout << "Enter the item to remove: ";
+        std::cin >> item;
+        shoppingList->remove(item);
+    }
+    else if (selection == 4){
         std::string item;
         int quantity;
         std::cout << "Enter the item to change: ";
@@ -206,7 +240,7 @@ int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
         std::cin >> quantity;
         shoppingList->set_value(item, quantity);
     }
-    else if (selection == 4){
+    else if (selection == 5){
         shoppingList->fresh();
 
         // saving to machine routine, it's pretty simple but we could wrap it in a function for clarity
@@ -215,16 +249,65 @@ int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
         file.close();
 
         //send to server
-        Message mergeMessage(*shoppingList, "merge");
-        s_send(socket, mergeMessage.toString());
-        s_recv(socket);
+        if (settings["automatic_push"]){
+            Message mergeMessage(*shoppingList, "merge");
+            s_send(socket, mergeMessage.toString());
+            s_recv(socket);
+        }
 
+        shoppingList = nullptr;
+        state = NO_LIST;
+    }
+    else if (selection == 6){
+        *shoppingList = originalList;
         shoppingList = nullptr;
         state = NO_LIST;
     }
     else{
         std::cerr << "Invalid selection" << std::endl;
     }
+    return 0;
+}
+
+int innerSettingsUI(json& settings_json){
+    std::cout << std::endl << "1: Toggle automatic push: " << settings_json["settings"]["automatic_push"] << std::endl;
+    std::cout << "2: Toggle automatic pull: " << settings_json["settings"]["automatic_pull"] << std::endl;
+    std::cout << "3: Back" << std::endl;
+
+    int selection;
+    std::cin >> selection;
+    if (selection == 1){
+        settings_json["settings"]["automatic_push"] = !settings_json["settings"]["automatic_push"];
+        settings["automatic_push"] = !settings["automatic_push"];
+    }
+    else if (selection == 2){
+        settings_json["settings"]["automatic_pull"] = !settings_json["settings"]["automatic_pull"];
+        settings["automatic_pull"] = !settings["automatic_pull"];
+    }
+    else if (selection == 3){
+        return 1;
+    }
+    else{
+        std::cerr << "Invalid selection" << std::endl;
+    }
+
+    return 0;
+}
+
+int settingsUI(){
+    std::cout << std::endl << "Settings" << std::endl;
+    std::ifstream settings_file("client/info.json");
+    json settings_json;
+    settings_file >> settings_json;
+    settings_file.close();
+
+    while (innerSettingsUI(settings_json) == 0);
+
+    std::ofstream file("client/info.json");
+    file << settings_json;
+    file.close();
+
+
     return 0;
 }
 
@@ -241,40 +324,6 @@ int main() {
     std::string zmqID = s_set_id(socket);
     socket.connect("tcp://localhost:5559");
 
-/*
-    Message creation("create", list_id, {});
-    s_send(socket, creation.toString());
-
-    std::string reply_str = s_recv(socket);
-
-    std::cout << "Received reply :" << " [" << reply_str << "]" << std::endl;
-
-    for (int request_nbr = 0; request_nbr < 10; ++request_nbr) {
-        // Create the message object
-        //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
-        //Message message("helloWorld", "mrBombastic2", data);
-        ShoppingList shopping_list(list_id);
-        shopping_list.setUserId(user_id);
-        shopping_list.add("apple");
-        shopping_list.add("banana");
-        shopping_list.add("apple", request_nbr);
-
-        shopping_list.fresh();
-        shopping_list.add("apple", 2);
-        Message message(shopping_list, "merge");
-
-
-        // Serialize the message into a string and send it
-        s_send(socket, message.toString());
-
-        // Receive the reply
-        std::string reply_str = s_recv(socket);
-
-        // Print the received reply
-        std::cout << "Received reply " << request_nbr << " [" << reply_str << "]" << std::endl;
-    }
-*/
-
     vector<ShoppingList> shopping_lists = loadLists();
     ShoppingList *current_shopping_list = nullptr;
 
@@ -287,7 +336,11 @@ int main() {
                 current_shopping_list = selectListUI(shopping_lists);
                 break;
             case LIST_SELECTED:
-                alterListUI(current_shopping_list, socket);
+                alterListUI(current_shopping_list, current_shopping_list->copy(), socket);
+                break;
+            case SETTINGS:
+                settingsUI();
+                state = NO_LIST;
                 break;
             case SHUTDOWN:
                 std::cout << "See you next time!" << std::endl;
@@ -297,47 +350,3 @@ int main() {
 
     return 0;
 }
-
-
-
-// #include "../libs/zhelpers.hpp"
-// #include "../libs/message.h"
-// #include <iostream>
-// #include <string>
-// #include <vector>
-
-// int main() {
-//     // Initialize ZeroMQ context and socket
-//     zmq::context_t context(1);                     // 1 thread in the context
-//     zmq::socket_t socket(context, ZMQ_REQ);     // Create a request socket
-
-//     socket.connect("tcp://localhost:5559");
-
-//     for (int request_nbr = 0; request_nbr < 10; ++request_nbr) {
-//         // Create the message object
-//         //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
-//         //Message message("helloWorld", "mrBombastic2", data);
-//         ShoppingList shopping_list("1");
-//         shopping_list.setUserId("1");
-//         shopping_list.add("apple");
-//         shopping_list.add("banana");
-//         shopping_list.add("apple", 3);
-
-//         shopping_list.fresh();
-//         shopping_list.add("apple", 2);
-//         Message message(shopping_list, "helloWorld");
-
-
-//         // Serialize the message into a string and send it
-//         s_send(socket, message.toString());
-
-//         // Receive the reply
-//         std::string reply_str = s_recv(socket);
-
-//         // Print the received reply
-//         std::cout << "Received reply " << request_nbr << " [" << reply_str << "]" << std::endl;
-//     }
-//     return 0;
-// }
-
-
