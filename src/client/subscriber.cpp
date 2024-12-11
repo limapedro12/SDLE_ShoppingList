@@ -7,7 +7,7 @@ int receiveSubscriptions(zmq::socket_t &subscriber, vector<ShoppingList>& shoppi
       //  Read message contents
       std::string contents = s_recv (subscriber);
 		
-      std::cout << "[" << address << "] " << contents << std::endl;
+    //   std::cout << "[" << address << "] " << contents << std::endl;
     }
     return 0;
 }
