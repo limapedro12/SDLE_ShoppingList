@@ -33,7 +33,7 @@ Message handleMessage(nlohmann::json received, const std::string& workerID){
             return Message("error", id, data);
         }
         data = {{"Success", 1}, {"data", rep["data"]}};
-        return Message("get", id, data);
+        return Message("create", id, data);
     }
     else if (operation == "erase"){
         eraseShoppingList(received, workerID);
