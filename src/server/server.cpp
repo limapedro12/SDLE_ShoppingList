@@ -32,9 +32,10 @@ Message handleMessage(nlohmann::json received, const std::string& workerID){
         return Message("erase", id, data);
     }
     else if (operation == "merge"){
-        mergeShoppingList(received, workerID);
+        json j = mergeShoppingList(received, workerID);
         data = {{"Success", 1}};
-        return Message("merge", id, data);
+        json dataToReturn = {{"Success", 1}, {"id", j["id"]}, {"data", j["data"]}, {"operation", "merge"}};
+        return Message(dataToReturn);
     } 
     else {
         std::cout << "Error: Operation requested not handleable" << std::endl;

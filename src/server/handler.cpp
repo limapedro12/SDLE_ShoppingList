@@ -53,7 +53,7 @@ void eraseShoppingList(json request, const std::string& workerID) {
     }
 }
 
-void mergeShoppingList(json request, const std::string& workerID) {
+json mergeShoppingList(json request, const std::string& workerID) {
     std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
     if (!fs::exists(filePath)) {
@@ -67,16 +67,27 @@ void mergeShoppingList(json request, const std::string& workerID) {
     file >> old_list;
     file.close();
 
-    json new_data = request["data"];
-    json& old_data = old_list["data"];
+    // json new_data = request["data"];
+    // json& old_data = old_list["data"];
 
-    for (auto& [key, value] : new_data.items()) {
-        old_data[key] = value; // Perform merging logic
-    }
+    // for (auto& [key, value] : new_data.items()) {
+    //     old_data[key] = value; // Perform merging logic
+    // }
+
+    ShoppingList newList(request["id"], request["data"]);
+    newList.setUserId(workerID);
+    ShoppingList oldList(old_list["id"], old_list["data"]);
+    oldList.setUserId(workerID);
+
+    ShoppingList mergedList = oldList.merge(newList);
+
+    json merged_data = mergedList.contentsToJSON();
 
     std::ofstream new_file(filePath);
-    new_file << old_list.dump(4);
+    new_file << merged_data.dump(4);
     new_file.close();
 
     std::cout << "Shopping list merged successfully for ID: " << request["id"].get<std::string>() << std::endl;
+
+    return {{"id", request["id"]}, {"data", merged_data}};
 }

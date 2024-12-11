@@ -1,5 +1,9 @@
 #include "../headers/ShoppingList.hpp"
 
+ShoppingList::ShoppingList(){
+  this->id = "";
+  this->items = CounterMap();
+}
 
 ShoppingList::ShoppingList(string id){
   this->id = id;
@@ -8,6 +12,10 @@ ShoppingList::ShoppingList(string id){
 
 void ShoppingList::setUserId(string user_id){
   this->user_id = user_id;
+}
+
+string ShoppingList::getUserId(){
+  return this->user_id;
 }
 
 void ShoppingList::resetUserId(){
@@ -95,6 +103,8 @@ ShoppingList ShoppingList::merge(ShoppingList other){
     if (item.second < 0)
       new_shopping_list.items.remove(item.first, this->user_id);
   }
+
+  new_shopping_list.setUserId(this->user_id);
 
   return new_shopping_list;
 }

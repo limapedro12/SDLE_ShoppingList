@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
-#include <queue>
+#include <map>
 #include "../server/handler.hpp"
 #include "subscriber.hpp"
 
@@ -283,7 +283,10 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
     }
 }
 
+
+
 int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::socket_t& socket){
+    *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
 
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add/increase an item" << std::endl;
@@ -356,6 +359,8 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
     return 0;
 }
 
+
+
 int innerSettingsUI(json& settings_json){
     std::cout << std::endl << "1: Toggle automatic push: " << settings_json["settings"]["automatic_push"] << std::endl;
     std::cout << "2: Toggle automatic pull: " << settings_json["settings"]["automatic_pull"] << std::endl;
@@ -406,6 +411,8 @@ int settingsUI(){
 }
 
 
+
+
 int main() {
     // Initialize ZeroMQ context and socket
     zmq::context_t context(1);                     // 1 thread in the context
@@ -424,11 +431,11 @@ int main() {
 
     vector<ShoppingList> shopping_lists = loadLists();
 
-    for (auto &list : shopping_lists){
+    for(auto &list : shopping_lists){
         subscriber.set(zmq::sockopt::subscribe, list.get_id());
     }
 
-    thread subscriberThread(receiveSubscriptions, std::ref(subscriber), std::ref(shopping_lists));
+    thread subscriptionThread(receiveSubscriptions, std::ref(subscriber), user_id);
 
     ShoppingList *current_shopping_list = nullptr;
 
