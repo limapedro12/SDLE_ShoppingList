@@ -330,47 +330,10 @@ int main() {
     std::string zmqID = s_set_id(socket);
     socket.connect("tcp://localhost:5559");
 
-<<<<<<< HEAD
     // Initialize subscriber socket
     zmq::socket_t subscriber(context, ZMQ_SUB);
     subscriber.connect("tcp://localhost:5561");
 
-/*
-    Message creation("create", list_id, {});
-    s_send(socket, creation.toString());
-
-    std::string reply_str = s_recv(socket);
-
-    std::cout << "Received reply :" << " [" << reply_str << "]" << std::endl;
-
-    for (int request_nbr = 0; request_nbr < 10; ++request_nbr) {
-        // Create the message object
-        //std::unordered_map<std::string, int> data = {{"a", 1}, {"b", 2}, {"c", 3}};
-        //Message message("helloWorld", "mrBombastic2", data);
-        ShoppingList shopping_list(list_id);
-        shopping_list.setUserId(user_id);
-        shopping_list.add("apple");
-        shopping_list.add("banana");
-        shopping_list.add("apple", request_nbr);
-
-        shopping_list.fresh();
-        shopping_list.add("apple", 2);
-        Message message(shopping_list, "merge");
-
-
-        // Serialize the message into a string and send it
-        s_send(socket, message.toString());
-
-        // Receive the reply
-        std::string reply_str = s_recv(socket);
-
-        // Print the received reply
-        std::cout << "Received reply " << request_nbr << " [" << reply_str << "]" << std::endl;
-    }
-*/
-
-=======
->>>>>>> 509399f8d689c575b9874c5a489deca6bc994695
     vector<ShoppingList> shopping_lists = loadLists();
 
     for (auto &list : shopping_lists){
