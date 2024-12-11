@@ -14,9 +14,11 @@ private:
     size_t hashFunction(const std::string& key);
 
 public:
-    void addNode(Node* node);
+    void addNode(Node* node, int virtualNodes);
     Node* getNode(const std::string& key);
     bool isEmpty();
+    std::vector<Node*> getPreferenceList(const std::string& key, int replicationFactor);
+    std::map<size_t, Node*> getRing();
 };
 
 class Node {
