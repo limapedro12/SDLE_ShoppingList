@@ -26,6 +26,15 @@ Message handleMessage(nlohmann::json received, const std::string& workerID){
         data = {{"Success", 1}, {"data", rep["data"]}};
         return Message("get", id, data);
     }
+    else if (operation == "clone"){
+        json rep = cloneShoppingList(id);
+        if (rep.empty()){
+            data = {{"Error", 1}};
+            return Message("error", id, data);
+        }
+        data = {{"Success", 1}, {"data", rep["data"]}};
+        return Message("get", id, data);
+    }
     else if (operation == "erase"){
         eraseShoppingList(received, workerID);
         data = {{"Success", 1}};

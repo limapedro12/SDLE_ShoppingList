@@ -43,6 +43,62 @@ json getShoppingList(json request, const std::string& workerID) {
     return list;
 }
 
+json cloneShoppingList(std::string id) {
+    std::vector<std::pair<std::string, size_t>> nodeNames;
+    std::string nodesDir = "./nodes/";
+
+    // Iterate over the contents of the nodes directory
+    for (const auto& entry : fs::directory_iterator(nodesDir)) {
+        if (entry.is_directory()) {
+            // Extract the folder name (node name)
+            // call the hash function on the folder name
+            
+            std::string nodeName = entry.path().filename().string();
+            md5 encrypter;
+            std::string hashString = encrypter.encrypt(nodeName);
+
+            // Convert the first 16 characters (8 bytes) of the hash string to a size_t
+            size_t hashValue = 0;
+            for (size_t i = 0; i < sizeof(size_t) * 2 && i < hashString.size(); i += 2) {
+                hashValue = (hashValue << 8) | std::stoi(hashString.substr(i, 2), nullptr, 16);
+            }
+
+            // Add the node name and hash value to the vector
+            nodeNames.push_back({nodeName, hashValue});
+
+            // print the node name and hash value
+            std::cout << "Node: " << nodeName << " Hash: " << hashValue << std::endl;
+        }
+    }
+
+    // hash the list id
+    md5 encrypter;
+    std::string hashString = encrypter.encrypt(id);
+
+    std::cout << "List ID: " << id << " Hash: " << hashString << std::endl;
+
+    // look inside the vector for the node that has the smallest hash value greater than the list id hash value
+    size_t listHashValue = 0;
+    for (size_t i = 0; i < sizeof(size_t) * 2 && i < hashString.size(); i += 2) {
+        listHashValue = (listHashValue << 8) | std::stoi(hashString.substr(i, 2), nullptr, 16);
+    }
+
+    std::cout << "POS MERDA " << "List Hash Value: " << listHashValue << std::endl;
+
+    std::string cloneNode;
+    size_t cloneNodeHash = SIZE_MAX;
+    for (const auto& [nodeName, nodeHash] : nodeNames) {
+        if (nodeHash > listHashValue && nodeHash < cloneNodeHash) {
+            cloneNode = nodeName;
+            cloneNodeHash = nodeHash;
+        }
+    }
+
+    // print the node that is going to be cloned
+    std::cout << "Cloning list to node: " << cloneNode << std::endl;
+
+}
+
 void eraseShoppingList(json request, const std::string& workerID) {
     std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
