@@ -9,6 +9,9 @@ namespace fs = std::filesystem;
 
 ConsistentHashRing workerHashRing;
 
+const int VIRTUAL_NODES = 3;  // Number of virtual nodes per worker
+const int REPLICATION_FACTOR = 3; // Number of replicas for each key
+
 void receive_empty(zmq::socket_t& socket) {
     zmq::message_t empty_msg;
     socket.recv(empty_msg, zmq::recv_flags::none);
@@ -43,6 +46,22 @@ void sendPub(const std::string &message, zmq::socket_t &publisher){
     }
 }
 
+void printPreferenceList(const std::vector<Node*>& preferenceList) {
+    std::cout << "Preference list for the request:" << std::endl;
+    for (size_t i = 0; i < preferenceList.size(); ++i) {
+        std::cout << "  Node " << i + 1 << ": " << preferenceList[i]->id << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void printVirtualNodes() {
+    std::cout << "Current virtual nodes in the hash ring:" << std::endl;
+    for (const auto& [hash, node] : workerHashRing.getRing()) {
+        std::cout << "  Hash: " << hash << " -> Node: " << node->id << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 int main(void) {
     // Prepare context and sockets
     zmq::context_t context(1);
@@ -70,15 +89,39 @@ int main(void) {
             std::cout << "Received request from client: " << client_addr << std::endl;
 
             if (!workerHashRing.isEmpty()) {
-                // Use consistent hashing to forward the request
-                std::string worker_id = workerHashRing.getNode(client_addr)->id;
-                std::cout << "Forwarding request to worker: " << worker_id << std::endl;
 
-                s_sendmore(backend, worker_id);
-                s_sendmore(backend, std::string(""));
-                s_sendmore(backend, client_addr);
-                s_sendmore(backend, std::string(""));
-                s_send(backend, request);
+                std::vector<Node*> preferenceList;
+
+                json j = json::parse(request);
+                std::string list_id = j["id"];
+
+                int workerCount = workerHashRing.getRing().size() / VIRTUAL_NODES;
+
+                std::cout << "Worker count: " << workerCount << std::endl;
+
+                // Use consistent hashing to forward the request
+                if(workerCount < REPLICATION_FACTOR){   
+                    std::cout << "Worker count is less than replication factor. Forwarding request to all workers." << workerCount << std::endl;       
+                    preferenceList = workerHashRing.getPreferenceList(list_id, workerCount);
+                }
+                else {
+                    std::cout << "Worker count is greater than or equal to replication factor. Forwarding request to " << REPLICATION_FACTOR << " workers." << std::endl;
+                    preferenceList = workerHashRing.getPreferenceList(list_id, REPLICATION_FACTOR);
+                }
+
+                printPreferenceList(preferenceList);
+
+                // Forward the request to all workers in the preference list
+                for (Node* node : preferenceList) {
+                    std::string worker_id = node->id;
+                    // std::cout << "Forwarding request to worker: " << worker_id << std::endl;
+
+                    s_sendmore(backend, worker_id);
+                    s_sendmore(backend, std::string(""));
+                    s_sendmore(backend, client_addr);
+                    s_sendmore(backend, std::string(""));
+                    s_send(backend, request);
+                }
             } else {
                 std::cerr << "No workers available to handle request." << std::endl;
             }
@@ -99,10 +142,12 @@ int main(void) {
 
                 // Add to consistent hash ring
                 Node* workerNode = new Node(worker_id);
-                workerHashRing.addNode(workerNode);
+                workerHashRing.addNode(workerNode, VIRTUAL_NODES);
 
                 // Initialize directories for the worker
                 initializeWorkerDirectory(worker_id);
+
+                printVirtualNodes();
 
                 std::cout << "Worker registered and directories initialized: " << worker_id << std::endl;
             } else {
