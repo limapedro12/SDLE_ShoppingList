@@ -11,7 +11,7 @@ ConsistentHashRing workerHashRing;
 
 void receive_empty(zmq::socket_t& socket) {
     zmq::message_t empty_msg;
-    socket.recv(empty_msg, zmq::recv_flags::none);
+    zmq::recv_result_t result = socket.recv(empty_msg, zmq::recv_flags::none);
     assert(empty_msg.size() == 0);
 }
 
@@ -81,6 +81,10 @@ int main(void) {
                 s_send(backend, request);
             } else {
                 std::cerr << "No workers available to handle request." << std::endl;
+                s_sendmore(frontend, client_addr);
+                s_sendmore(frontend, std::string(""));
+                std::string reply = "{'No workers available to handle request.': 1}";
+                s_send(frontend, reply);
             }
 
             sendPub(request, publisher);

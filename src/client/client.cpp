@@ -5,7 +5,10 @@
 #include <vector>
 #include <filesystem>
 #include <fstream>
+#include <thread>
+#include <queue>
 #include "../server/handler.hpp"
+#include "subscriber.hpp"
 
 md5 encrypter1;
 
@@ -83,7 +86,7 @@ vector<ShoppingList> loadLists(){
     return shopping_lists;
 }
 
-int createList(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
+int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     // Update user counter
     int value;
     bool user_found = false;
@@ -133,18 +136,21 @@ int createList(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
     // receive reply from server
     std::cout << "Received reply from server " << s_recv(socket) << std::endl;
     // todo once we actally send errors when stuff goes wrong on server
+ 
+    // subscribe to list
+    subscriber.set(zmq::sockopt::subscribe, list_id);
 
     return 0;
 }
 
-states mainMenuUI(vector<ShoppingList>& shopping_lists, zmq::socket_t& socket){
+states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     std::cout << std::endl << "1: Create a new list" << std::endl;
     std::cout << "2: Select a list" << std::endl;
     std::cout << "3: Exit" << std::endl;
     int selection;
     std::cin >> selection;
     if (selection == 1){
-        createList(shopping_lists, socket);
+        createList(shopping_lists, socket, subscriber);
         return NO_LIST;
     }
     else if (selection == 2){
@@ -228,6 +234,14 @@ int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
     return 0;
 }
 
+queue<ShoppingList> getQueue(vector<ShoppingList>& shopping_lists){
+    queue<ShoppingList> q;
+    for (auto &list : shopping_lists){
+        q.push(list);
+    }
+    return q;
+}
+
 
 int main() {
     // Initialize ZeroMQ context and socket
@@ -240,6 +254,10 @@ int main() {
     srand(time(NULL));
     std::string zmqID = s_set_id(socket);
     socket.connect("tcp://localhost:5559");
+
+    // Initialize subscriber socket
+    zmq::socket_t subscriber(context, ZMQ_SUB);
+    subscriber.connect("tcp://localhost:5561");
 
 /*
     Message creation("create", list_id, {});
@@ -276,12 +294,19 @@ int main() {
 */
 
     vector<ShoppingList> shopping_lists = loadLists();
+
+    for (auto &list : shopping_lists){
+        subscriber.set(zmq::sockopt::subscribe, list.get_id());
+    }
+
+    thread subscriberThread(receiveSubscriptions, std::ref(subscriber), std::ref(shopping_lists));
+
     ShoppingList *current_shopping_list = nullptr;
 
     while (true){
         switch (state){
             case NO_LIST:
-                state = mainMenuUI(shopping_lists, socket);
+                state = mainMenuUI(shopping_lists, socket, subscriber);
                 break;
             case SELECTING_LIST:
                 current_shopping_list = selectListUI(shopping_lists);
