@@ -1,10 +1,10 @@
 {
     "settings": {
         "automatic_pull": true,
-        "automatic_push": true
+        "automatic_push": false
     },
-    "user_id": [
-        "c4ca4238a0b923820dcc509a6f75849b",
-        "c81e728d9d4c2f636f067f89cc14862c"
-    ]
+    "user_id": {
+        "1679091c5a880faf6fb5e6087eb1b2dc": "",
+        "e4da3b7fbbce2345d7772b0674a318d5": "bobby"
+    }
 }

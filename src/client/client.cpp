@@ -35,7 +35,7 @@ void loadUser(){
         std::ofstream file_out("client/info.json");
         
         // Write the user_id to the info.json file with the key user_id
-        json user_id_json = {{"user_id", std::vector<std::string>{}}};
+        json user_id_json = {{"user_id", std::unordered_map<std::string, std::string>{}}};
 
         // add basic settings
         user_id_json["settings"]["automatic_push"] = true;
@@ -49,7 +49,8 @@ void loadUser(){
 
     json client_json;
     file >> client_json;
-    std::vector<std::string> user_ids = client_json["user_id"];
+    file.close();
+    std::unordered_map<std::string, std::string> user_ids = client_json["user_id"];
     settings["automatic_push"] = client_json["settings"]["automatic_push"];
     settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
 
@@ -68,8 +69,14 @@ void loadUser(){
             if (selection==1){
                 std::cout << std::endl << "Choose a user to login: " << std::endl;
                 std::cout << "0: Go back" << std::endl;
-                for (int i = 0; i < user_ids.size(); i++){
-                    std::cout << i+1 << ": " << user_ids[i] << std::endl;
+                std::vector<std::string> number_to_id;
+                int i = 1;
+                for (auto &user : user_ids){
+                    number_to_id.push_back(user.first);
+                    std::cout << i << ": ";
+                    user.second == "" ? std::cout << user.first : std::cout << user.second << " - " << user.first;
+                    std::cout << std::endl;
+                    i++;
                 }
                 int user_selection;
                 std::cin >> user_selection;
@@ -81,7 +88,8 @@ void loadUser(){
                     break;
                 }
                 else{
-                    user_id = user_ids[user_selection-1];
+                    std::string index = number_to_id[user_selection-1];
+                    user_id = index;
                     break;
                 }
             }
@@ -90,11 +98,14 @@ void loadUser(){
                 int number = j["number"];
                 j["number"] = number + 1;
                 std::string new_user_id = encrypter1.encrypt(std::to_string(number));
-                user_ids.push_back(new_user_id);
                 user_id = new_user_id;
 
                 // Add user_id to the info.json file
-                client_json["user_id"].push_back(user_id);
+                // make sure we have the latest version of the file
+                std::ifstream file_in("client/info.json");
+                file_in >> client_json;
+                file_in.close();
+                client_json["user_id"][new_user_id] = "";
                 std::ofstream file_out("client/info.json");
                 file_out << client_json.dump(4);
                 file_out.close();
@@ -113,12 +124,11 @@ void loadUser(){
         }
 
         if (user_id != ""){
-            std::cout << "Logged in as user: " << user_id << std::endl;
+            if (client_json["user_id"[user_id]]=="") std::cout << "Logged in as user: " << user_id << std::endl;
+            else std::cout << "Logged in as user: " << client_json["user_id"][user_id] << std::endl;
             break;
         }
     }
-
-    file.close();
 
 }
 
@@ -222,8 +232,8 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
 states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     std::cout << std::endl << "1: Create a new list" << std::endl;
     std::cout << "2: Select a list" << std::endl;
-    std::cout << "3: Settings" << std::endl;
-    std::cout << "4: Change user" << std::endl;
+    std::cout << "3: Change user" << std::endl;
+    std::cout << "4: Settings" << std::endl;
     std::cout << "5: Exit" << std::endl;
     int selection;
     std::cin >> selection;
@@ -235,12 +245,12 @@ states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, z
         return SELECTING_LIST;
     }
     else if (selection == 3){
-        return SETTINGS;
-    }
-    else if (selection == 4){
         loadUser();
         shopping_lists = loadLists();
         return NO_LIST;
+    }
+    else if (selection == 4){
+        return SETTINGS;
     }
     else if (selection == 5){
         return SHUTDOWN;
@@ -349,7 +359,8 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
 int innerSettingsUI(json& settings_json){
     std::cout << std::endl << "1: Toggle automatic push: " << settings_json["settings"]["automatic_push"] << std::endl;
     std::cout << "2: Toggle automatic pull: " << settings_json["settings"]["automatic_pull"] << std::endl;
-    std::cout << "3: Back" << std::endl;
+    std::cout << "3: Change nickname" << std::endl;
+    std::cout << "4: Back" << std::endl;
 
     int selection;
     std::cin >> selection;
@@ -362,6 +373,12 @@ int innerSettingsUI(json& settings_json){
         settings["automatic_pull"] = !settings["automatic_pull"];
     }
     else if (selection == 3){
+        std::string nickname;
+        std::cout << "Enter new nickname: ";
+        std::cin >> nickname;
+        settings_json["user_id"][user_id] = nickname;
+    }
+    else if (selection == 4){
         return 1;
     }
     else{
@@ -381,7 +398,7 @@ int settingsUI(){
     while (innerSettingsUI(settings_json) == 0);
 
     std::ofstream file("client/info.json");
-    file << settings_json;
+    file << settings_json.dump(4);
     file.close();
 
 
