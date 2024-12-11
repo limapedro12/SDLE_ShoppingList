@@ -1,1 +1,10 @@
-{"settings":{"automatic_pull":true,"automatic_push":false},"user_id":"c4ca4238a0b923820dcc509a6f75849b"}
+{
+    "settings": {
+        "automatic_pull": true,
+        "automatic_push": true
+    },
+    "user_id": [
+        "c4ca4238a0b923820dcc509a6f75849b",
+        "c81e728d9d4c2f636f067f89cc14862c"
+    ]
+}
