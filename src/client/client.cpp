@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
-#include <queue>
+#include <map>
 #include "../server/handler.hpp"
 #include "subscriber.hpp"
 
@@ -183,6 +183,7 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
 }
 
 int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
+    *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
 
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add an item" << std::endl;
@@ -232,14 +233,6 @@ int alterListUI(ShoppingList* shoppingList, zmq::socket_t& socket){
         std::cerr << "Invalid selection" << std::endl;
     }
     return 0;
-}
-
-queue<ShoppingList> getQueue(vector<ShoppingList>& shopping_lists){
-    queue<ShoppingList> q;
-    for (auto &list : shopping_lists){
-        q.push(list);
-    }
-    return q;
 }
 
 
@@ -295,11 +288,11 @@ int main() {
 
     vector<ShoppingList> shopping_lists = loadLists();
 
-    for (auto &list : shopping_lists){
+    for(auto &list : shopping_lists){
         subscriber.set(zmq::sockopt::subscribe, list.get_id());
     }
 
-    thread subscriberThread(receiveSubscriptions, std::ref(subscriber), std::ref(shopping_lists));
+    thread subscriptionThread(receiveSubscriptions, std::ref(subscriber), user_id);
 
     ShoppingList *current_shopping_list = nullptr;
 
