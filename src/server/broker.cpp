@@ -37,6 +37,11 @@ void initializeWorkerDirectory(const std::string& worker_id) {
 
 void sendPub(const std::string &message, zmq::socket_t &publisher){
     json json_message = json::parse(message);
+
+    if (json_message.find("operation") == json_message.end() || json_message.find("id") == json_message.end()){
+        return;
+    }
+    
     std::string operation = json_message["operation"];
     std::string list_id = json_message["id"];
 

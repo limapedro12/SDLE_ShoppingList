@@ -230,7 +230,7 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
     return 0;
 }
 
-void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>& shopping_lists){
+void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>& shopping_lists, zmq::socket_t& subscriber){
     
     // send to server
     Message cloneMessage("get", list_id, {});
@@ -252,10 +252,13 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     }
 
     if (!found){
-        ShoppingList shopping_list(list_id, list);
+        ShoppingList shopping_list(list_id, list["data"]);
         shopping_list.setUserId(user_id);
         shopping_lists.push_back(shopping_list);
+        subscriber.set(zmq::sockopt::subscribe, list_id);
     }
+
+    cout << "Added to shopping lists" << endl;
 
     std::ofstream file("./client/lists/" + list_id + ".json");
     file << list;
@@ -288,7 +291,7 @@ states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, z
         std::cout << "Please enter the ID of the list you want to clone: " << std::endl;
         std::string clone_id;
         std::cin >> clone_id;
-        cloneList(clone_id, socket, shopping_lists);
+        cloneList(clone_id, socket, shopping_lists, subscriber);
         return CLONE_LIST;
     }
     else if (selection == 5){

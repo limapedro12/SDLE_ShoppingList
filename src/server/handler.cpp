@@ -136,7 +136,7 @@ json mergeShoppingList(json request, const std::string& workerID) {
 
     ShoppingList mergedList = oldList.merge(newList);
 
-    json merged_data = mergedList.contentsToJSON();
+    json merged_data = {{"id", request["id"]}, {"data", mergedList.contentsToJSON()}};
 
     std::ofstream new_file(filePath);
     new_file << merged_data.dump(4);
@@ -144,5 +144,5 @@ json mergeShoppingList(json request, const std::string& workerID) {
 
     std::cout << "Shopping list merged successfully for ID: " << request["id"].get<std::string>() << std::endl;
 
-    return {{"id", request["id"]}, {"data", merged_data}};
+    return merged_data;
 }

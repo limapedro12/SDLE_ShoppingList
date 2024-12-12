@@ -16,7 +16,6 @@ void receiveSubscriptions(zmq::socket_t &subscriber, string userId){
         // std::cout << "[" << address << "] " << contents << std::endl;
 
         json j = json::parse(contents);
-        // cout << j.dump(4) << endl;
 
         json j_data = j["data"];
         // cout << "1" << endl;
