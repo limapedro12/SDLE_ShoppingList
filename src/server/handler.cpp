@@ -72,7 +72,7 @@ json cloneShoppingList(std::string id) {
     // hash the list id
     std::string hashString = encrypter.encrypt(id);
 
-    // look inside the vector for the node that has the smallest hash value greater than the list id hash value
+    // Convert the hash string to size_t
     size_t listHashValue = 0;
     for (size_t i = 0; i < sizeof(size_t) * 2 && i < hashString.size(); i += 2) {
         listHashValue = (listHashValue << 8) | std::stoi(hashString.substr(i, 2), nullptr, 16);
@@ -80,34 +80,22 @@ json cloneShoppingList(std::string id) {
 
     std::cout << "List Hash Value: " << listHashValue << std::endl;
 
-    std::string closestNode;
-    size_t closestNodeHash = 0;
+    // Search through all nodes' /lists/ directories for the list with the given ID
     for (auto& [nodeName, nodeHash] : nodeNames) {
-        if (nodeHash > listHashValue) {
-            if (closestNode.empty() || nodeHash < closestNodeHash) {
-                closestNode = nodeName;
-                closestNodeHash = nodeHash;
-            }
+        std::string filePath = "nodes/" + nodeName + "/lists/" + id + ".json";
+
+        if (fs::exists(filePath)) {
+            std::cout << "Found list at: " << filePath << std::endl;
+            std::ifstream file(filePath);
+            json list;
+            file >> list;
+            file.close();
+            return list; 
         }
     }
 
-    std::cout << "Closest Node: " << closestNode << " Closest Node Hash: " << closestNodeHash << std::endl;
-
-    // read the list from the closest node
-    std::string filePath = "nodes/" + closestNode + "/lists/" + id + ".json";
-
-    if (!fs::exists(filePath)) {
-        std::cerr << "Shopping list not found for ID: " << id << std::endl;
-        return json();
-    }
-
-    std::ifstream
-    file(filePath);
-    json list;
-    file >> list;
-    file.close();
-
-    return list;
+    std::cout << "Shopping list not found for ID: " << id << std::endl;
+    return json();
 }
 
 void eraseShoppingList(json request, const std::string& workerID) {

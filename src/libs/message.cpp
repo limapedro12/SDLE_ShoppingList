@@ -7,6 +7,13 @@ Message::Message(nlohmann::json json){
     this->data = json["data"];
 }
 
+Message::Message(nlohmann::json json, std::string operation){
+    this->json = json;
+    this->operation = operation;
+    this->id = json["id"];
+    this->data = json["data"];
+}
+
 Message::Message(std::string json){
     this->json = nlohmann::json::parse(json);
     this->operation = this->json["operation"];

@@ -18,22 +18,12 @@ Message handleMessage(nlohmann::json received, const std::string& workerID){
         return Message("create", id, data);
     }
     else if (operation == "get"){
-        json rep = getShoppingList(received, workerID);
-        if (rep.empty()){
-            data = {{"Error", 1}};
-            return Message("error", id, data);
-        }
-        data = {{"Success", 1}, {"data", rep["data"]}};
-        return Message("get", id, data);
-    }
-    else if (operation == "clone"){
         json rep = cloneShoppingList(id);
         if (rep.empty()){
             data = {{"Error", 1}};
             return Message("error", id, data);
         }
-        data = {{"Success", 1}, {"data", rep["data"]}};
-        return Message("create", id, data);
+        return Message(rep, "create");
     }
     else if (operation == "erase"){
         eraseShoppingList(received, workerID);
