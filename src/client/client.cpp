@@ -190,9 +190,9 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
 states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     std::cout << std::endl << "1: Create a new list" << std::endl;
     std::cout << "2: Select a list" << std::endl;
-    std::cout << "3: Clone a list" << std::endl;
-    std::cout << "4: Settings" << std::endl;
-    std::cout << "5: Exit" << std::endl;
+    std::cout << "4: Clone a list" << std::endl;
+    std::cout << "5: Settings" << std::endl;
+    std::cout << "6: Exit" << std::endl;
     int selection;
     std::cin >> selection;
     if (selection == 1){
@@ -202,17 +202,17 @@ states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, z
     else if (selection == 2){
         return SELECTING_LIST;
     }
-    else if (selection == 3){
+    else if (selection == 4){
         std::cout << "Please enter the ID of the list you want to clone: " << std::endl;
         std::string clone_id;
         std::cin >> clone_id;
         cloneList(clone_id, socket, shopping_lists);
         return CLONE_LIST;
     }
-    else if (selection == 4){
+    else if (selection == 5){
         return SETTINGS;
     }
-    else if (selection == 5){
+    else if (selection == 6){
         return SHUTDOWN;
     }
     else{
