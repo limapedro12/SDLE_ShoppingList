@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
-#include <queue>
+#include <map>
 #include "../server/handler.hpp"
 #include "subscriber.hpp"
 
@@ -22,7 +22,7 @@ enum states {
 };
 
 states state = NO_LIST;
-std::string user_id;
+std::string user_id = "";
 json j;
 std::unordered_map<std::string, bool> settings;
 
@@ -32,67 +32,142 @@ void loadUser(){
     file2.close();
 
     // check if there is a info.json file in the client dir, if there is not, create one and put hashed id in it, else read the hashed id from the file
-    std::ifstream file("client/info.json");
-    if (!file.good()) {
-        std::ofstream file("client/info.json");
-        // Check the number.json file in the server directory and get the value of the number key, hash it to use as the hashed id and increment the number value by 1
-        int number = j["number"];
-        j["number"] = number + 1;
-        user_id = encrypter1.encrypt(std::to_string(number));
+    if (!std::filesystem::exists("client/info.json")){
+        std::ofstream file_out("client/info.json");
+        
         // Write the user_id to the info.json file with the key user_id
-        json user_id_json = {{"user_id", user_id}};
+        json user_id_json = {{"user_id", std::unordered_map<std::string, std::string>{}}};
 
         // add basic settings
         user_id_json["settings"]["automatic_push"] = true;
         user_id_json["settings"]["automatic_pull"] = true;
-        settings["automatic_push"] = true;
-        settings["automatic_pull"] = true;
 
-        file << user_id_json;
-        file.close();
-        // Add the new user to user_numbers
-        json new_user = {{user_id, 1}};
-        j["user_numbers"].push_back(new_user);
-
-    } else {
-        json client_json;
-        file >> client_json;
-        user_id = client_json["user_id"];
-        settings["automatic_push"] = client_json["settings"]["automatic_push"];
-        settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
-        file.close();
+        file_out << user_id_json.dump(4);
+        file_out.close();
     }
+
+    std::ifstream file("client/info.json");
+
+    json client_json;
+    file >> client_json;
+    file.close();
+    std::unordered_map<std::string, std::string> user_ids = client_json["user_id"];
+    settings["automatic_push"] = client_json["settings"]["automatic_push"];
+    settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
+
+    while (true){
+        std::cout << std::endl << "Do you want to login or create a new user?" << std::endl;
+        std::cout << "1: Login" << std::endl;
+        std::cout << "2: Create new user" << std::endl;	
+        int selection;
+        std::cin >> selection;
+
+        if (selection != 1 && selection != 2){
+            std::cerr << "Invalid selection" << std::endl;
+            continue;
+        }
+        while (true){
+            if (selection==1){
+                std::cout << std::endl << "Choose a user to login: " << std::endl;
+                std::cout << "0: Go back" << std::endl;
+                std::vector<std::string> number_to_id;
+                int i = 1;
+                for (auto &user : user_ids){
+                    number_to_id.push_back(user.first);
+                    std::cout << i << ": ";
+                    user.second == "" ? std::cout << user.first : std::cout << user.second << " - " << user.first;
+                    std::cout << std::endl;
+                    i++;
+                }
+                int user_selection;
+                std::cin >> user_selection;
+                if (user_selection < 0 || user_selection > user_ids.size()){
+                    std::cerr << "Invalid selection" << std::endl;
+                    continue;
+                }
+                else if (user_selection == 0){
+                    break;
+                }
+                else{
+                    std::string index = number_to_id[user_selection-1];
+                    user_id = index;
+                    break;
+                }
+            }
+            else{
+                // Check the number.json file in the server directory and get the value of the number key, hash it to use as the hashed id and increment the number value by 1
+                int number = j["number"];
+                j["number"] = number + 1;
+                std::string new_user_id = encrypter1.encrypt(std::to_string(number));
+                user_id = new_user_id;
+
+                // Add user_id to the info.json file
+                // make sure we have the latest version of the file
+                std::ifstream file_in("client/info.json");
+                file_in >> client_json;
+                file_in.close();
+                client_json["user_id"][new_user_id] = "";
+                std::ofstream file_out("client/info.json");
+                file_out << client_json.dump(4);
+                file_out.close();
+
+                // Add the new user to user_numbers
+                json new_user = {{user_id, 1}};
+                j["user_numbers"].push_back(new_user);
+
+                // Save the updated number.json file
+                std::ofstream out_file("server/number.json");
+                out_file << j.dump(4);
+                out_file.close();
+
+                break;
+            }
+        }
+
+        if (user_id != ""){
+            if (client_json["user_id"]=="") std::cout << "Logged in as user: " << user_id << std::endl;
+            else std::cout << "Logged in as user: " << client_json["user_id"][user_id] << std::endl;
+            break;
+        }
+    }
+
 }
 
 vector<ShoppingList> loadLists(){
-    std::string listFolder = "./client/lists";
+    std::string listFolder = "./client/lists/"+user_id;
     vector<ShoppingList> shopping_lists;
-    try{
-        for (const auto & entry : std::filesystem::directory_iterator(listFolder)){
-            if (entry.is_regular_file() && entry.path().extension() == ".json"){
-                std::string listId = entry.path().filename().string();
-                listId.erase(listId.length() - 5, 5);
+    if (!std::filesystem::exists(listFolder)){
+        std::filesystem::create_directory(listFolder);
+    }
+    else{
+        try{
+            for (const auto & entry : std::filesystem::directory_iterator(listFolder)){
+                if (entry.is_regular_file() && entry.path().extension() == ".json"){
+                    std::string listId = entry.path().filename().string();
+                    listId.erase(listId.length() - 5, 5);
 
-                std::ifstream file(entry.path());
+                    std::ifstream file(entry.path());
 
-                if (file.is_open()){
-                    nlohmann::json json;
-                    file >> json;
+                    if (file.is_open()){
+                        nlohmann::json json;
+                        file >> json;
 
-                    ShoppingList shopping_list(listId, json);
-                    shopping_list.setUserId(user_id);
-                    shopping_lists.push_back(shopping_list);
-                }
-                else{
-                    std::cerr << "Could not open file: " << entry.path() << std::endl;
+                        ShoppingList shopping_list(listId, json);
+                        shopping_list.setUserId(user_id);
+                        shopping_lists.push_back(shopping_list);
+                    }
+                    else{
+                        std::cerr << "Could not open file: " << entry.path() << std::endl;
+                    }
                 }
             }
+        } catch (const std::filesystem::filesystem_error &e) {
+            std::cerr << "Filesystem error: " << e.what() << std::endl;
+        } catch (const std::exception &e) {
+            std::cerr << "General error: " << e.what() << std::endl;
         }
-    } catch (const std::filesystem::filesystem_error &e) {
-        std::cerr << "Filesystem error: " << e.what() << std::endl;
-    } catch (const std::exception &e) {
-        std::cerr << "General error: " << e.what() << std::endl;
     }
+
     std::cout << "Loaded " << shopping_lists.size() << " shopping lists" << std::endl;
 
     return shopping_lists;
@@ -135,7 +210,7 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
     shopping_lists.push_back(shopping_list);
 
     // save to machine
-    std::ofstream file("./client/lists/" + list_id + ".json");
+    std::ofstream file("./client/lists/"+ user_id + "/" + list_id + ".json");
     file << shopping_list.contentsToJSON();
     file.close();
 
@@ -190,9 +265,11 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
 states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     std::cout << std::endl << "1: Create a new list" << std::endl;
     std::cout << "2: Select a list" << std::endl;
+    std::cout << "3: Change user" << std::endl;
     std::cout << "4: Clone a list" << std::endl;
     std::cout << "5: Settings" << std::endl;
-    std::cout << "6: Exit" << std::endl;
+    std::cout << "6: Exit" << std::endl;  
+
     int selection;
     std::cin >> selection;
     if (selection == 1){
@@ -201,6 +278,11 @@ states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, z
     }
     else if (selection == 2){
         return SELECTING_LIST;
+    }
+    else if (selection == 3){
+        loadUser();
+        shopping_lists = loadLists();
+        return NO_LIST;
     }
     else if (selection == 4){
         std::cout << "Please enter the ID of the list you want to clone: " << std::endl;
@@ -243,7 +325,10 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
     }
 }
 
+
+
 int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::socket_t& socket){
+    *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
 
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add/increase an item" << std::endl;
@@ -291,7 +376,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         shoppingList->fresh();
 
         // saving to machine routine, it's pretty simple but we could wrap it in a function for clarity
-        std::ofstream file("./client/lists/" + shoppingList->get_id() + ".json");
+        std::ofstream file("./client/lists/" + user_id + "/" + shoppingList->get_id() + ".json");
         file << shoppingList->contentsToJSON();
         file.close();
 
@@ -316,10 +401,13 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
     return 0;
 }
 
+
+
 int innerSettingsUI(json& settings_json){
     std::cout << std::endl << "1: Toggle automatic push: " << settings_json["settings"]["automatic_push"] << std::endl;
     std::cout << "2: Toggle automatic pull: " << settings_json["settings"]["automatic_pull"] << std::endl;
-    std::cout << "3: Back" << std::endl;
+    std::cout << "3: Change nickname" << std::endl;
+    std::cout << "4: Back" << std::endl;
 
     int selection;
     std::cin >> selection;
@@ -332,6 +420,12 @@ int innerSettingsUI(json& settings_json){
         settings["automatic_pull"] = !settings["automatic_pull"];
     }
     else if (selection == 3){
+        std::string nickname;
+        std::cout << "Enter new nickname: ";
+        std::cin >> nickname;
+        settings_json["user_id"][user_id] = nickname;
+    }
+    else if (selection == 4){
         return 1;
     }
     else{
@@ -351,12 +445,14 @@ int settingsUI(){
     while (innerSettingsUI(settings_json) == 0);
 
     std::ofstream file("client/info.json");
-    file << settings_json;
+    file << settings_json.dump(4);
     file.close();
 
 
     return 0;
 }
+
+
 
 
 int main() {
@@ -377,11 +473,11 @@ int main() {
 
     vector<ShoppingList> shopping_lists = loadLists();
 
-    for (auto &list : shopping_lists){
+    for(auto &list : shopping_lists){
         subscriber.set(zmq::sockopt::subscribe, list.get_id());
     }
 
-    thread subscriberThread(receiveSubscriptions, std::ref(subscriber), std::ref(shopping_lists));
+    thread subscriptionThread(receiveSubscriptions, std::ref(subscriber), user_id);
 
     ShoppingList *current_shopping_list = nullptr;
 

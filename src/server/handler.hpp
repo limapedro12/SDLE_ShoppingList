@@ -14,5 +14,5 @@ using namespace std;
 void createShoppingList(json request, const std::string& workerID);
 json getShoppingList(json request, const std::string& workerID);
 void eraseShoppingList(json request, const std::string& workerID);
-void mergeShoppingList(json request, const std::string& workerID);
 json cloneShoppingList(std::string id);
+json mergeShoppingList(json request, const std::string& workerID);

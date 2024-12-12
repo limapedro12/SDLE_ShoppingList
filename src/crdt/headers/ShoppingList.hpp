@@ -17,11 +17,15 @@ private:
   string user_id = "";
 
 public:
+  ShoppingList();
+
   ShoppingList(string id);
 
   ShoppingList(string id, json j);
 
   void setUserId(string user_id);
+
+  string getUserId();
 
   void resetUserId();
 

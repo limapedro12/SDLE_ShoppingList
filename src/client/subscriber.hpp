@@ -1,7 +1,10 @@
 #include "../libs/zhelpers.hpp"
-#include <queue>
+#include <map>
+#include <mutex>
 #include "../crdt/headers/ShoppingList.hpp"
 
 using namespace std;
 
-int receiveSubscriptions(zmq::socket_t &subscriber, vector<ShoppingList>& shopping_lists);
+void receiveSubscriptions(zmq::socket_t &subscriber, string userId);
+ShoppingList getNewVersion(string list_id);
+
