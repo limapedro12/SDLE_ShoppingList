@@ -15,6 +15,7 @@ md5 encrypter1;
 enum states {
     NO_LIST,
     SELECTING_LIST,
+    CLONE_LIST,
     LIST_SELECTED,
     SHUTDOWN,
     SETTINGS
@@ -229,12 +230,46 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
     return 0;
 }
 
+void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>& shopping_lists){
+    
+    // send to server
+    Message cloneMessage("get", list_id, {});
+    s_send(socket, cloneMessage.toString());
+
+    // receive the list from the server, parse to json and save to file in the client dir
+    std::string list_json = s_recv(socket);
+    std::cout << "Received list: " << list_json << std::endl;
+    json list = json::parse(list_json);
+
+    //add to shopping lists, if already exists, merge
+    bool found = false;
+    for (auto& shopping_list : shopping_lists){
+        if (shopping_list.get_id() == list_id){
+            found = true;
+            shopping_list = shopping_list.merge(ShoppingList(list_id, list));
+            break;
+        }
+    }
+
+    if (!found){
+        ShoppingList shopping_list(list_id, list);
+        shopping_list.setUserId(user_id);
+        shopping_lists.push_back(shopping_list);
+    }
+
+    std::ofstream file("./client/lists/" + list_id + ".json");
+    file << list;
+    file.close();
+}
+
 states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     std::cout << std::endl << "1: Create a new list" << std::endl;
     std::cout << "2: Select a list" << std::endl;
     std::cout << "3: Change user" << std::endl;
-    std::cout << "4: Settings" << std::endl;
-    std::cout << "5: Exit" << std::endl;
+    std::cout << "4: Clone a list" << std::endl;
+    std::cout << "5: Settings" << std::endl;
+    std::cout << "6: Exit" << std::endl;  
+
     int selection;
     std::cin >> selection;
     if (selection == 1){
@@ -250,9 +285,16 @@ states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, z
         return NO_LIST;
     }
     else if (selection == 4){
-        return SETTINGS;
+        std::cout << "Please enter the ID of the list you want to clone: " << std::endl;
+        std::string clone_id;
+        std::cin >> clone_id;
+        cloneList(clone_id, socket, shopping_lists);
+        return CLONE_LIST;
     }
     else if (selection == 5){
+        return SETTINGS;
+    }
+    else if (selection == 6){
         return SHUTDOWN;
     }
     else{
@@ -446,6 +488,9 @@ int main() {
                 break;
             case SELECTING_LIST:
                 current_shopping_list = selectListUI(shopping_lists);
+                break;
+            case CLONE_LIST:
+                state = NO_LIST;
                 break;
             case LIST_SELECTED:
                 alterListUI(current_shopping_list, current_shopping_list->copy(), socket);

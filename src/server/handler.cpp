@@ -43,6 +43,61 @@ json getShoppingList(json request, const std::string& workerID) {
     return list;
 }
 
+json cloneShoppingList(std::string id) {
+    std::vector<std::pair<std::string, size_t>> nodeNames;
+    std::string nodesDir = "./nodes/";
+    md5 encrypter;
+
+    // Iterate over the contents of the nodes directory
+    for (const auto& entry : fs::directory_iterator(nodesDir)) {
+        if (entry.is_directory()) {
+
+            std::string nodeName = entry.path().filename().string();
+            std::string hashString = encrypter.encrypt(nodeName);
+
+            // Convert the first 16 characters (8 bytes) of the hash string to a size_t
+            size_t hashValue = 0;
+            for (size_t i = 0; i < sizeof(size_t) * 2 && i < hashString.size(); i += 2) {
+                hashValue = (hashValue << 8) | std::stoi(hashString.substr(i, 2), nullptr, 16);
+            }
+
+            // Add the node name and hash value to the vector
+            nodeNames.push_back({nodeName, hashValue});
+
+            // print the node name and hash value
+            std::cout << "Node: " << nodeName << " Hash: " << hashValue << std::endl;
+        }
+    }
+
+    // hash the list id
+    std::string hashString = encrypter.encrypt(id);
+
+    // Convert the hash string to size_t
+    size_t listHashValue = 0;
+    for (size_t i = 0; i < sizeof(size_t) * 2 && i < hashString.size(); i += 2) {
+        listHashValue = (listHashValue << 8) | std::stoi(hashString.substr(i, 2), nullptr, 16);
+    }
+
+    std::cout << "List Hash Value: " << listHashValue << std::endl;
+
+    // Search through all nodes' /lists/ directories for the list with the given ID
+    for (auto& [nodeName, nodeHash] : nodeNames) {
+        std::string filePath = "nodes/" + nodeName + "/lists/" + id + ".json";
+
+        if (fs::exists(filePath)) {
+            std::cout << "Found list at: " << filePath << std::endl;
+            std::ifstream file(filePath);
+            json list;
+            file >> list;
+            file.close();
+            return list; 
+        }
+    }
+
+    std::cout << "Shopping list not found for ID: " << id << std::endl;
+    return json();
+}
+
 void eraseShoppingList(json request, const std::string& workerID) {
     std::string filePath = "nodes/" + workerID + "/lists/" + request["id"].get<std::string>() + ".json";
 
