@@ -124,7 +124,7 @@ void loadUser(){
         }
 
         if (user_id != ""){
-            if (client_json["user_id"[user_id]]=="") std::cout << "Logged in as user: " << user_id << std::endl;
+            if (client_json["user_id"]=="") std::cout << "Logged in as user: " << user_id << std::endl;
             else std::cout << "Logged in as user: " << client_json["user_id"][user_id] << std::endl;
             break;
         }
