@@ -414,15 +414,8 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         state = NO_LIST;
     }
     else if (selection == 6){
-        // std::cout << shoppingList->print() << std::endl;
-        // std::cout << originalList.print() << std::endl
-        //           << std::endl;
         *(shoppingList) = originalList.copy();
-        // shoppingList = nullptr;
         state = NO_LIST;
-    //     std::cout << shoppingList->print() << std::endl;
-    //     std::cout << originalList.print() << std::endl
-    //               << std::endl;
     }
     else{
         std::cerr << "Invalid selection" << std::endl;
@@ -432,12 +425,12 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
 
 
 
-int innerSettingsUI(json& settings_json){
+int innerSettingsUI(zmq::socket_t& socket, json& settings_json){
     std::cout << "0: Back" << std::endl;
     std::cout << std::endl << "1: Toggle automatic push: " << settings_json["settings"]["automatic_push"] << std::endl;
     std::cout << "2: Toggle automatic pull: " << settings_json["settings"]["automatic_pull"] << std::endl;
     std::cout << "3: Change nickname" << std::endl;
-    if (settings["offline"]) std::cout << "4: Attempt to reconnect to server" << std::endl;
+    if (settings["offline"]) std::cout << "4: Reenable online mode" << std::endl;
 
     int selection;
     std::cin >> selection;
@@ -459,7 +452,7 @@ int innerSettingsUI(json& settings_json){
         settings_json["user_id"][user_id] = nickname;
     }
     else if (settings["offline"] && selection == 4){
-        // TODO: reconnect to server routine
+        settings["offline"] = false;
     }
     else{
         std::cerr << "Invalid selection" << std::endl;
@@ -468,14 +461,14 @@ int innerSettingsUI(json& settings_json){
     return 0;
 }
 
-int settingsUI(){
+int settingsUI(zmq::socket_t& socket){
     std::cout << std::endl << "Settings" << std::endl;
     std::ifstream settings_file("client/info.json");
     json settings_json;
     settings_file >> settings_json;
     settings_file.close();
 
-    while (innerSettingsUI(settings_json) == 0);
+    while (innerSettingsUI(socket, settings_json) == 0);
 
     std::ofstream file("client/info.json");
     file << settings_json.dump(4);
@@ -536,7 +529,7 @@ int main() {
                 alterListUI(current_shopping_list, originalList, socket);
                 break;
             case SETTINGS:
-                settingsUI();
+                settingsUI(socket);
                 state = NO_LIST;
                 break;
             case SHUTDOWN:
