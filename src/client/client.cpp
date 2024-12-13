@@ -394,10 +394,16 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         state = NO_LIST;
     }
     else if (selection == 6){
-        *shoppingList = originalList;
-        shoppingList = nullptr;
+        // std::cout << shoppingList->print() << std::endl;
+        // std::cout << originalList.print() << std::endl
+        //           << std::endl;
+        *(shoppingList) = originalList;
+        // shoppingList = nullptr;
         state = NO_LIST;
-    }
+    //     std::cout << shoppingList->print() << std::endl;
+    //     std::cout << originalList.print() << std::endl
+    //               << std::endl;
+    // }
     else{
         std::cerr << "Invalid selection" << std::endl;
     }
@@ -484,6 +490,8 @@ int main() {
 
     ShoppingList *current_shopping_list = nullptr;
 
+    ShoppingList originalList;
+
     while (true){
         switch (state){
             case NO_LIST:
@@ -491,12 +499,13 @@ int main() {
                 break;
             case SELECTING_LIST:
                 current_shopping_list = selectListUI(shopping_lists);
+                originalList = current_shopping_list->copy();
                 break;
             case CLONE_LIST:
                 state = NO_LIST;
                 break;
             case LIST_SELECTED:
-                alterListUI(current_shopping_list, current_shopping_list->copy(), socket);
+                alterListUI(current_shopping_list, originalList, socket);
                 break;
             case SETTINGS:
                 settingsUI();
