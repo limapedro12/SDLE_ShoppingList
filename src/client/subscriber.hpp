@@ -1,5 +1,6 @@
 #include "../libs/zhelpers.hpp"
 #include <map>
+#include <fstream>
 #include <mutex>
 #include "../crdt/headers/ShoppingList.hpp"
 

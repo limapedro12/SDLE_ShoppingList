@@ -7,6 +7,19 @@ map<string, ShoppingList> all_received_lists;
 std::mutex all_received_lists_mutex;
 
 void receiveSubscriptions(zmq::socket_t &subscriber, string userId){
+    // read from file lists/userId/subscriptions.json and save it to all_received_lists
+    string filename = "client/lists/" + userId + "/subscriptions.json";
+    ifstream file(filename);
+    if (file.good()){
+        json j;
+        file >> j;
+        for (auto &list : j){
+            ShoppingList sl(list["id"], list["data"]);
+            all_received_lists[sl.get_id()] = sl;
+        }
+        file.close();
+    }
+
     while (1) {
         //  Read envelope with address
         std::string address = s_recv(subscriber);
@@ -34,6 +47,17 @@ void receiveSubscriptions(zmq::socket_t &subscriber, string userId){
             all_received_lists[address] = received_list;
         else
             all_received_lists[address] = all_received_lists[address].merge(received_list);
+
+        // save to file
+        ofstream file(filename);
+        // create a json list and for each member in all_received lists to it
+        json j_all_received_lists;
+        for (auto &list : all_received_lists){
+            j_all_received_lists.push_back({{"id", list.first},
+                                            {"data", list.second.contentsToJSON()}});
+        }
+        file << j_all_received_lists;
+        file.close();
     }
 }
 
