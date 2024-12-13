@@ -10,6 +10,11 @@ ShoppingList::ShoppingList(string id){
   this->items = CounterMap();
 }
 
+ShoppingList::ShoppingList(string id, json j){
+  this->id = id;
+  this->items = CounterMap(j);
+}
+
 void ShoppingList::setUserId(string user_id){
   this->user_id = user_id;
 }
@@ -137,9 +142,4 @@ CounterMap ShoppingList::get_items_with_counter(){
 
 json ShoppingList::contentsToJSON(){
   return this->items.toJSON();
-}
-
-ShoppingList::ShoppingList(string id, json j){
-  this->id = id;
-  this->items = CounterMap(j);
 }

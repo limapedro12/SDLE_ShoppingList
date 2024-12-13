@@ -15,7 +15,6 @@ md5 encrypter1;
 enum states {
     NO_LIST,
     SELECTING_LIST,
-    CLONE_LIST,
     LIST_SELECTED,
     SHUTDOWN,
     SETTINGS
@@ -25,6 +24,22 @@ states state = NO_LIST;
 std::string user_id = "";
 json j;
 std::unordered_map<std::string, bool> settings;
+
+std::string send_and_recv(zmq::socket_t &socket, Message message){
+    if (settings["offline"]){
+        return "";
+    }
+    s_send(socket, message.toString());
+    std::string reply = s_recv(socket);
+    if (reply == ""){
+        std::cerr << "ERROR: Communication with server unsuccessful, entering offline mode." << std::endl;
+        settings["offline"] = true;
+        return "";
+    }
+    else{
+        return reply;
+    }
+}
 
 void loadUser(){
     std::ifstream file2("server/number.json");
@@ -54,6 +69,7 @@ void loadUser(){
     std::unordered_map<std::string, std::string> user_ids = client_json["user_id"];
     settings["automatic_push"] = client_json["settings"]["automatic_push"];
     settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
+    settings["offline"] = false;
 
     while (true){
         std::cout << std::endl << "Do you want to login or create a new user?" << std::endl;
@@ -125,7 +141,7 @@ void loadUser(){
         }
 
         if (user_id != ""){
-            if (client_json["user_id"]=="") std::cout << "Logged in as user: " << user_id << std::endl;
+            if (client_json["user_id"][user_id]=="") std::cout << "Logged in as user: " << user_id << std::endl;
             else std::cout << "Logged in as user: " << client_json["user_id"][user_id] << std::endl;
             break;
         }
@@ -161,7 +177,7 @@ vector<ShoppingList> loadLists(){
     else{
         try{
             for (const auto & entry : std::filesystem::directory_iterator(listFolder)){
-                if (entry.is_regular_file() && entry.path().extension() == ".json"){
+                if (entry.is_regular_file() && entry.path().extension() == ".json" && entry.path().filename().string()!= "subscriptions.json"){
                     std::string listId = entry.path().filename().string();
                     listId.erase(listId.length() - 5, 5);
 
@@ -237,11 +253,7 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
 
     // send to server
     Message creation("create", list_id, {});
-    s_send(socket, creation.toString());
-
-    // receive reply from server
-    std::cout << "Received reply from server " << s_recv(socket) << std::endl;
-    // todo once we actally send errors when stuff goes wrong on server
+    std::string reply = send_and_recv(socket, creation);
  
     // subscribe to list
     subscriber.set(zmq::sockopt::subscribe, list_id);
@@ -249,14 +261,22 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
     return 0;
 }
 
-void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>& shopping_lists, zmq::socket_t& subscriber){
-    
+void cloneList(zmq::socket_t& socket, vector<ShoppingList>& shopping_lists, zmq::socket_t& subscriber){~
+    if (settings["offline"]){
+        std::cerr << "Cannot clone list in offline mode" << std::endl;
+        return;
+    }
+    std::cout << "Please enter the ID of the list you want to clone: " << std::endl;
+    std::string clone_id;
+    std::cin >> clone_id;
     // send to server
     Message cloneMessage("get", list_id, {});
-    s_send(socket, cloneMessage.toString());
-
     // receive the list from the server, parse to json and save to file in the client dir
-    std::string list_json = s_recv(socket);
+    std::string list_json = send_and_recv(socket, cloneMessage);
+    if (list_json == ""){
+        std::cerr << "Could not clone list" << std::endl;
+        return;
+    }
     std::cout << "Received list: " << list_json << std::endl;
     json list = json::parse(list_json);
 
@@ -286,9 +306,9 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
 
 states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     std::cout << std::endl << "1: Create a new list" << std::endl;
-    std::cout << "2: Select a list" << std::endl;
-    std::cout << "3: Change user" << std::endl;
-    std::cout << "4: Clone a list" << std::endl;
+    std::cout << "2: Clone a list" << std::endl;
+    std::cout << "3: Select a list" << std::endl;
+    std::cout << "4: Change user" << std::endl;
     std::cout << "5: Settings" << std::endl;
     std::cout << "6: Exit" << std::endl;  
 
@@ -299,19 +319,16 @@ states mainMenuUI(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, z
         return NO_LIST;
     }
     else if (selection == 2){
-        return SELECTING_LIST;
+        cloneList(socket, shopping_lists, subscriber);
+        return NO_LIST;
     }
     else if (selection == 3){
+        return SELECTING_LIST;
+    }
+    else if (selection == 4){
         loadUser();
         shopping_lists = loadLists();
         return NO_LIST;
-    }
-    else if (selection == 4){
-        std::cout << "Please enter the ID of the list you want to clone: " << std::endl;
-        std::string clone_id;
-        std::cin >> clone_id;
-        cloneList(clone_id, socket, shopping_lists, subscriber);
-        return CLONE_LIST;
     }
     else if (selection == 5){
         return SETTINGS;
@@ -407,8 +424,10 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         //send to server
         if (settings["automatic_push"]){
             Message mergeMessage(*shoppingList, "merge");
-            s_send(socket, mergeMessage.toString());
-            s_recv(socket);
+            std::string reply = send_and_recv(socket, mergeMessage);
+            if (reply == ""){
+                std::cerr << "Could not push list" << std::endl;
+            }
         }
 
         shoppingList = nullptr;
@@ -434,14 +453,18 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
 
 
 int innerSettingsUI(json& settings_json){
+    std::cout << "0: Back" << std::endl;
     std::cout << std::endl << "1: Toggle automatic push: " << settings_json["settings"]["automatic_push"] << std::endl;
     std::cout << "2: Toggle automatic pull: " << settings_json["settings"]["automatic_pull"] << std::endl;
     std::cout << "3: Change nickname" << std::endl;
-    std::cout << "4: Back" << std::endl;
+    if (settings["offline"]) std::cout << "4: Attempt to reconnect to server" << std::endl;
 
     int selection;
     std::cin >> selection;
-    if (selection == 1){
+    if (selection == 0){
+        return 1;
+    }
+    else if (selection == 1){
         settings_json["settings"]["automatic_push"] = !settings_json["settings"]["automatic_push"];
         settings["automatic_push"] = !settings["automatic_push"];
     }
@@ -455,8 +478,8 @@ int innerSettingsUI(json& settings_json){
         std::cin >> nickname;
         settings_json["user_id"][user_id] = nickname;
     }
-    else if (selection == 4){
-        return 1;
+    else if (settings["offline"] && selection == 4){
+        // TODO: reconnect to server routine
     }
     else{
         std::cerr << "Invalid selection" << std::endl;
@@ -482,9 +505,6 @@ int settingsUI(){
     return 0;
 }
 
-
-
-
 int main() {
     // Initialize ZeroMQ context and socket
     zmq::context_t context(1);                     // 1 thread in the context
@@ -495,7 +515,17 @@ int main() {
 
     srand(time(NULL));
     std::string zmqID = s_set_id(socket);
-    socket.connect("tcp://localhost:5559");
+    socket.set(zmq::sockopt::connect_timeout, 5000);
+    socket.set(zmq::sockopt::rcvtimeo, 3000);
+    try{
+        socket.connect("tcp://localhost:5559");
+    }
+    catch(const zmq::error_t& e){
+        std::cerr << "Could not connect to server." << std::endl;
+        std::cerr << "Starting in offline mode." << std::endl;
+        std::cerr << "To reconnect, go to the settings menu." << std::endl;
+        settings["offline"] = true;
+    }
 
     // Initialize subscriber socket
     zmq::socket_t subscriber(context, ZMQ_SUB);
@@ -522,10 +552,7 @@ int main() {
                 break;
             case SELECTING_LIST:
                 current_shopping_list = selectListUI(shopping_lists);
-                originalList = current_shopping_list->copy();
-                break;
-            case CLONE_LIST:
-                state = NO_LIST;
+                if (current_shopping_list != nullptr) originalList = current_shopping_list->copy();
                 break;
             case LIST_SELECTED:
                 alterListUI(current_shopping_list, originalList, socket);
