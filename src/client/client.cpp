@@ -472,7 +472,7 @@ int settingsUI(zmq::socket_t& socket){
     settings_file >> settings_json;
     settings_file.close();
 
-    while (innerSettingsUI(socket, settings_json) == 0);
+    while (innerSettingsUI(settings_json) == 0);
 
     std::ofstream file("client/info.json");
     file << settings_json.dump(4);
