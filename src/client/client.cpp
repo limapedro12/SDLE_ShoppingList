@@ -133,26 +133,26 @@ void loadUser(){
 
 }
 
-// void mergeAllListsFromServer(vecctor<ShoppingList> &shopping_lists){
-//     for (auto &shopping_list : shopping_lists){
-//         string list_id = shopping_list.get_id();
-//         // send to server
-//         Message cloneMessage("get", list_id, {});
-//         s_send(socket, cloneMessage.toString());
+void mergeAllListsFromServer(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket){
+    for (auto &shopping_list : shopping_lists){
+        string list_id = shopping_list.get_id();
+        // send to server
+        Message cloneMessage("get", list_id, {});
+        s_send(socket, cloneMessage.toString());
 
-//         // receive the list from the server, parse to json and save to file in the client dir
-//         std::string list_json = s_recv(socket);
-//         // std::cout << "Received list: " << list_json << std::endl;
-//         json list = json::parse(list_json);
+        // receive the list from the server, parse to json and save to file in the client dir
+        std::string list_json = s_recv(socket);
+        json list = json::parse(list_json);
 
-//         ShopppingList newList(list_id, list["data"])
+        cout << "Received list: " << list_id << std::endl;
 
-//         shopping_list = shopping_list.merge(newList);
-//     }
-// }
+        ShoppingList newList(list_id, list);
+
+        shopping_list = shopping_list.merge(newList);
+    }
+}
 
 vector<ShoppingList> loadLists(){
-    cout << "Loading lists..." << std::endl;
     std::string listFolder = "./client/lists/"+user_id;
     vector<ShoppingList> shopping_lists;
     if (!std::filesystem::exists(listFolder)){
@@ -502,6 +502,8 @@ int main() {
     subscriber.connect("tcp://localhost:5561");
 
     vector<ShoppingList> shopping_lists = loadLists();
+
+    // mergeAllListsFromServer(shopping_lists, socket);
 
     for(auto &list : shopping_lists){
         subscriber.set(zmq::sockopt::subscribe, list.get_id());
