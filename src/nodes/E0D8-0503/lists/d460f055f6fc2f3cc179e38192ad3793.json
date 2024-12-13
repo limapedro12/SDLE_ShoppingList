@@ -1,0 +1,124 @@
+{
+    "data": {
+        "causal_histories": {
+            "c9f0f895fb98ab9159f51fd0297e236d": 2,
+            "eccbc87e4b5ce2fe28308fd9f2a7baf3": 1
+        },
+        "map": {
+            "dunas": {
+                "context_num": 1,
+                "counter": {
+                    "causalHistory": {
+                        "c9f0f895fb98ab9159f51fd0297e236d": 4
+                    },
+                    "counter": [
+                        [
+                            [
+                                "c9f0f895fb98ab9159f51fd0297e236d",
+                                1
+                            ],
+                            [
+                                1,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "c9f0f895fb98ab9159f51fd0297e236d",
+                                2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "c9f0f895fb98ab9159f51fd0297e236d",
+                                3
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "c9f0f895fb98ab9159f51fd0297e236d",
+                                4
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ]
+                    ]
+                },
+                "user_id": "c9f0f895fb98ab9159f51fd0297e236d"
+            },
+            "heroisDoMar": {
+                "context_num": 2,
+                "counter": {
+                    "causalHistory": {
+                        "c9f0f895fb98ab9159f51fd0297e236d": 2
+                    },
+                    "counter": [
+                        [
+                            [
+                                "c9f0f895fb98ab9159f51fd0297e236d",
+                                1
+                            ],
+                            [
+                                5,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "c9f0f895fb98ab9159f51fd0297e236d",
+                                2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ]
+                    ]
+                },
+                "user_id": "c9f0f895fb98ab9159f51fd0297e236d"
+            },
+            "hh": {
+                "context_num": 1,
+                "counter": {
+                    "causalHistory": {
+                        "eccbc87e4b5ce2fe28308fd9f2a7baf3": 2
+                    },
+                    "counter": [
+                        [
+                            [
+                                "eccbc87e4b5ce2fe28308fd9f2a7baf3",
+                                1
+                            ],
+                            [
+                                2,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "eccbc87e4b5ce2fe28308fd9f2a7baf3",
+                                2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ]
+                    ]
+                },
+                "user_id": "eccbc87e4b5ce2fe28308fd9f2a7baf3"
+            }
+        }
+    },
+    "id": "d460f055f6fc2f3cc179e38192ad3793"
+}

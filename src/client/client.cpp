@@ -133,7 +133,26 @@ void loadUser(){
 
 }
 
+// void mergeAllListsFromServer(vecctor<ShoppingList> &shopping_lists){
+//     for (auto &shopping_list : shopping_lists){
+//         string list_id = shopping_list.get_id();
+//         // send to server
+//         Message cloneMessage("get", list_id, {});
+//         s_send(socket, cloneMessage.toString());
+
+//         // receive the list from the server, parse to json and save to file in the client dir
+//         std::string list_json = s_recv(socket);
+//         // std::cout << "Received list: " << list_json << std::endl;
+//         json list = json::parse(list_json);
+
+//         ShopppingList newList(list_id, list["data"])
+
+//         shopping_list = shopping_list.merge(newList);
+//     }
+// }
+
 vector<ShoppingList> loadLists(){
+    cout << "Loading lists..." << std::endl;
     std::string listFolder = "./client/lists/"+user_id;
     vector<ShoppingList> shopping_lists;
     if (!std::filesystem::exists(listFolder)){
@@ -331,8 +350,9 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
 
 
 int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::socket_t& socket){
-    if(settings["automatic_pull"])
+    if(settings["automatic_pull"]){
         *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
+    }
 
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add/increase an item" << std::endl;
@@ -365,7 +385,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         std::string item;
         std::cout << "Enter the item to remove: ";
         std::cin >> item;
-        shoppingList->remove(item);
+        shoppingList->decrease(item, shoppingList->get_quantity(item));
     }
     else if (selection == 4){
         std::string item;
