@@ -23,13 +23,10 @@ enum states {
 
 states state = NO_LIST;
 std::string user_id = "";
-json j;
+json client_json;
 std::unordered_map<std::string, bool> settings;
 
 void loadUser(){
-    std::ifstream file2("server/number.json");
-    file2 >> j;
-    file2.close();
 
     // check if there is a info.json file in the client dir, if there is not, create one and put hashed id in it, else read the hashed id from the file
     if (!std::filesystem::exists("client/info.json")){
@@ -48,7 +45,6 @@ void loadUser(){
 
     std::ifstream file("client/info.json");
 
-    json client_json;
     file >> client_json;
     file.close();
     std::unordered_map<std::string, std::string> user_ids = client_json["user_id"];
@@ -96,8 +92,8 @@ void loadUser(){
             }
             else{
                 // Check the number.json file in the server directory and get the value of the number key, hash it to use as the hashed id and increment the number value by 1
-                int number = j["number"];
-                j["number"] = number + 1;
+                std::srand(time(NULL));
+                int number = rand() % 1000;
                 std::string new_user_id = encrypter1.encrypt(std::to_string(number));
                 user_id = new_user_id;
 
@@ -112,13 +108,8 @@ void loadUser(){
                 file_out.close();
 
                 // Add the new user to user_numbers
-                json new_user = {{user_id, 1}};
-                j["user_numbers"].push_back(new_user);
-
-                // Save the updated number.json file
-                std::ofstream out_file("server/number.json");
-                out_file << j.dump(4);
-                out_file.close();
+                json new_user = {{user_id, 0}};
+                client_json["user_numbers"].push_back(new_user);
 
                 break;
             }
@@ -178,7 +169,7 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
     int value;
     bool user_found = false;
     // is a for loop really needed? can't we just check if the user_id is in the json object?
-    for (auto& user : j["user_numbers"]) { 
+    for (auto& user : client_json["user_numbers"]) { 
         if (user.contains(user_id)) {     
             user[user_id] = user[user_id].get<int>() + 1; 
             value = user[user_id].get<int>();
@@ -186,19 +177,14 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
             break;
         }
     }
-
+    // updated the info.json file with the new value
     if (!user_found) {
-        json new_user = {{user_id, 1}};
-        value = 1;
-        j["user_numbers"].push_back(new_user);
+        std::cerr << "User not found in user_numbers" << std::endl;
+        return 1;
     }
-
-    // Save the updated number.json file
-    // this routine seems dangerous, should this not be handled by the server?
-    // i.e. send a request for creating the userid?
-    std::ofstream out_file("server/number.json");
-    out_file << j.dump(4);
-    out_file.close();
+    std::ofstream file_out("client/info.json");
+    file_out << client_json.dump(4);
+    file_out.close();
 
     std::string unhashed_list = user_id + "-" + std::to_string(value);
     std::string list_id = encrypter1.encrypt(unhashed_list);
