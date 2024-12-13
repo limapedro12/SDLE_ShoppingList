@@ -47,7 +47,7 @@ void loadUser(){
 
     file >> client_json;
     file.close();
-    std::unordered_map<std::string, std::string> user_ids = client_json["user_id"];
+    std::unordered_map<std::string, json> user_ids = client_json["user_id"];
     settings["automatic_push"] = client_json["settings"]["automatic_push"];
     settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
 
@@ -69,6 +69,7 @@ void loadUser(){
                 std::vector<std::string> number_to_id;
                 int i = 1;
                 for (auto &user : user_ids){
+                    std::cout << "user: " << user.first << std::endl;
                     number_to_id.push_back(user.first);
                     std::cout << i << ": ";
                     user.second == "" ? std::cout << user.first : std::cout << user.second << " - " << user.first;
@@ -102,14 +103,11 @@ void loadUser(){
                 std::ifstream file_in("client/info.json");
                 file_in >> client_json;
                 file_in.close();
-                client_json["user_id"][new_user_id] = "";
+                client_json["user_id"][new_user_id]["name"] = "";
+                client_json["user_id"][new_user_id]["number"] = "0";
                 std::ofstream file_out("client/info.json");
                 file_out << client_json.dump(4);
                 file_out.close();
-
-                // Add the new user to user_numbers
-                json new_user = {{user_id, 0}};
-                client_json["user_numbers"].push_back(new_user);
 
                 break;
             }
@@ -167,21 +165,18 @@ vector<ShoppingList> loadLists(){
 int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq::socket_t &subscriber){
     // Update user counter
     int value;
-    bool user_found = false;
-    // is a for loop really needed? can't we just check if the user_id is in the json object?
-    for (auto& user : client_json["user_numbers"]) { 
-        if (user.contains(user_id)) {     
-            user[user_id] = user[user_id].get<int>() + 1; 
-            value = user[user_id].get<int>();
-            user_found = true;
-            break;
-        }
-    }
-    // updated the info.json file with the new value
-    if (!user_found) {
-        std::cerr << "User not found in user_numbers" << std::endl;
+
+    // look for the user_id key in the json object
+    auto& user = client_json["user_id"][user_id];
+    if (user.is_null()) {
+        std::cerr << "User not found in user_id" << std::endl;
         return 1;
     }
+    std::string number_int = user["number"];
+    std::string new_number = std::to_string(std::stoi(number_int) + 1);
+    user["number"] = new_number;
+
+    // updated the info.json file 
     std::ofstream file_out("client/info.json");
     file_out << client_json.dump(4);
     file_out.close();
