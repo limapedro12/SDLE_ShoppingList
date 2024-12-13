@@ -403,7 +403,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
     //     std::cout << shoppingList->print() << std::endl;
     //     std::cout << originalList.print() << std::endl
     //               << std::endl;
-    // }
+    }
     else{
         std::cerr << "Invalid selection" << std::endl;
     }
