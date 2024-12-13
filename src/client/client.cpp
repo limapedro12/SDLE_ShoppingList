@@ -331,7 +331,8 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
 
 
 int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::socket_t& socket){
-    *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
+    if(settings["automatic_pull"])
+        *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
 
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add/increase an item" << std::endl;
@@ -397,7 +398,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         // std::cout << shoppingList->print() << std::endl;
         // std::cout << originalList.print() << std::endl
         //           << std::endl;
-        *(shoppingList) = originalList;
+        *(shoppingList) = originalList.copy();
         // shoppingList = nullptr;
         state = NO_LIST;
     //     std::cout << shoppingList->print() << std::endl;

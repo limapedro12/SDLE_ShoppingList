@@ -84,6 +84,7 @@ bool ShoppingList::contains(string item){
 ShoppingList ShoppingList::copy(){
   ShoppingList new_shopping_list(this->id);
   new_shopping_list.items = this->items;
+  new_shopping_list.setUserId(this->user_id);
   this->fresh();
   return new_shopping_list;
 }
