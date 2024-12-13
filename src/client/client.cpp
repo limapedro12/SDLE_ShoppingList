@@ -260,6 +260,8 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     // receive the list from the server, parse to json and save to file in the client dir
     std::string list_json = s_recv(socket);
     std::cout << "Received list: " << list_json << std::endl;
+    if(list_json == "{'No workers available to handle request.': 1}")
+        return;
     json list = json::parse(list_json);
 
     //add to shopping lists, if already exists, merge
@@ -267,7 +269,10 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     for (auto& shopping_list : shopping_lists){
         if (shopping_list.get_id() == list_id){
             found = true;
-            shopping_list = shopping_list.merge(ShoppingList(list_id, list));
+            if(list.find("data") == list.end())
+                return;
+            ShoppingList shopping_list2(list_id, list["data"]);
+            shopping_list = shopping_list.merge(shopping_list2);
             break;
         }
     }
@@ -504,8 +509,6 @@ int main() {
     subscriber.connect("tcp://localhost:5561");
 
     vector<ShoppingList> shopping_lists = loadLists();
-
-    // mergeAllListsFromServer(shopping_lists, socket);
 
     for(auto &list : shopping_lists){
         subscriber.set(zmq::sockopt::subscribe, list.get_id());
