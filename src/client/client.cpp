@@ -26,6 +26,22 @@ std::string user_id = "";
 json client_json;
 std::unordered_map<std::string, bool> settings;
 
+std::string send_and_recv(zmq::socket_t &socket, Message message){
+    if (settings["offline"]){
+        return "";
+    }
+    s_send(socket, message.toString());
+    std::string reply = s_recv(socket);
+    if (reply == ""){
+        std::cerr << "ERROR: Communication with server unsuccessful, entering offline mode." << std::endl;
+        settings["offline"] = true;
+        return "";
+    }
+    else{
+        return reply;
+    }
+}
+
 void loadUser(){
 
     // check if there is a info.json file in the client dir, if there is not, create one and put hashed id in it, else read the hashed id from the file
@@ -38,6 +54,7 @@ void loadUser(){
         // add basic settings
         user_id_json["settings"]["automatic_push"] = true;
         user_id_json["settings"]["automatic_pull"] = true;
+        settings["offline"] = false;
 
         file_out << user_id_json.dump(4);
         file_out.close();
@@ -232,6 +249,11 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
 }
 
 void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>& shopping_lists, zmq::socket_t& subscriber){
+
+    if (settings["offline"]){
+        std::cerr << "Cannot clone list in offline mode" << std::endl;
+        return;
+    }
     
     // send to server
     Message cloneMessage("get", list_id, {});
@@ -475,7 +497,18 @@ int main() {
 
     srand(time(NULL));
     std::string zmqID = s_set_id(socket);
-    socket.connect("tcp://localhost:5559");
+    socket.set(zmq::sockopt::connect_timeout, 5000);
+    socket.set(zmq::sockopt::rcvtimeo, 3000);
+    try{
+        socket.connect("tcp://localhost:5559");
+    }
+    catch(const zmq::error_t& e){
+        std::cerr << "Could not connect to server." << std::endl;
+        std::cerr << "Starting in offline mode." << std::endl;
+        std::cerr << "To reconnect, go to the settings menu." << std::endl;
+        settings["offline"] = true;
+    }
+
 
     // Initialize subscriber socket
     zmq::socket_t subscriber(context, ZMQ_SUB);
