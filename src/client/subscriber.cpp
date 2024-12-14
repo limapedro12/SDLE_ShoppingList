@@ -26,18 +26,13 @@ void receiveSubscriptions(zmq::socket_t &subscriber, string userId){
         //  Read message contents
         std::string contents = s_recv(subscriber);
         
-        // std::cout << "[" << address << "] " << contents << std::endl;
 
         json j = json::parse(contents);
 
         json j_data = j["data"];
-        // cout << "1" << endl;
         ShoppingList received_list(address, j_data);
-        // cout << "2" << endl;
         received_list.setUserId(userId);
-        // cout << "3" << endl;
 
-        // received_list.add("mergado");
 
         // Lock the mutex before accessing the shared map
         std::lock_guard<std::mutex> lock(all_received_lists_mutex);

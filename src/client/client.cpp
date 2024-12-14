@@ -121,7 +121,28 @@ void loadUser(){
 
 }
 
+void mergeAllListsFromServer(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket){
+    for (auto &shopping_list : shopping_lists){
+        if(settings["automatic_pull"]){
+            string list_id = shopping_list.get_id();
+            // send to server
+            Message cloneMessage("get", list_id, {});
+            s_send(socket, cloneMessage.toString());
+
+            // receive the list from the server, parse to json and save to file in the client dir
+            std::string list_json = s_recv(socket);
+            json list = json::parse(list_json);
+
+            ShoppingList newList(list_id, list);
+
+            shopping_list = shopping_list.merge(newList);
+        }
+    }
+}
+
 vector<ShoppingList> loadLists(){
+    // cout << "Loading lists..." << std::endl;
+
     std::string listFolder = "./client/lists/"+user_id;
     vector<ShoppingList> shopping_lists;
     if (!std::filesystem::exists(listFolder)){
@@ -219,6 +240,8 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     // receive the list from the server, parse to json and save to file in the client dir
     std::string list_json = s_recv(socket);
     std::cout << "Received list: " << list_json << std::endl;
+    if(list_json == "{'No workers available to handle request.': 1}")
+        return;
     json list = json::parse(list_json);
 
     //add to shopping lists, if already exists, merge
@@ -226,7 +249,10 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     for (auto& shopping_list : shopping_lists){
         if (shopping_list.get_id() == list_id){
             found = true;
-            shopping_list = shopping_list.merge(ShoppingList(list_id, list));
+            if(list.find("data") == list.end())
+                return;
+            ShoppingList shopping_list2(list_id, list["data"]);
+            shopping_list = shopping_list.merge(shopping_list2);
             break;
         }
     }
@@ -311,7 +337,9 @@ ShoppingList* selectListUI(vector<ShoppingList>& shopping_lists){
 
 
 int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::socket_t& socket){
-    *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
+    if(settings["automatic_pull"]){
+        *(shoppingList) = shoppingList->merge(getNewVersion(shoppingList->get_id()));
+    }
 
     std::cout << std::endl << shoppingList->print() << std::endl;
     std::cout << "1: Add/increase an item" << std::endl;
@@ -344,7 +372,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         std::string item;
         std::cout << "Enter the item to remove: ";
         std::cin >> item;
-        shoppingList->remove(item);
+        shoppingList->decrease(item, shoppingList->get_quantity(item));
     }
     else if (selection == 4){
         std::string item;
@@ -374,15 +402,8 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         state = NO_LIST;
     }
     else if (selection == 6){
-        // std::cout << shoppingList->print() << std::endl;
-        // std::cout << originalList.print() << std::endl
-        //           << std::endl;
-        *(shoppingList) = originalList;
-        // shoppingList = nullptr;
+        *(shoppingList) = originalList.copy();
         state = NO_LIST;
-    //     std::cout << shoppingList->print() << std::endl;
-    //     std::cout << originalList.print() << std::endl
-    //               << std::endl;
     }
     else{
         std::cerr << "Invalid selection" << std::endl;
@@ -424,7 +445,7 @@ int innerSettingsUI(json& settings_json){
     return 0;
 }
 
-int settingsUI(){
+int settingsUI(zmq::socket_t& socket){
     std::cout << std::endl << "Settings" << std::endl;
     std::ifstream settings_file("client/info.json");
     json settings_json;
@@ -488,7 +509,7 @@ int main() {
                 alterListUI(current_shopping_list, originalList, socket);
                 break;
             case SETTINGS:
-                settingsUI();
+                settingsUI(socket);
                 state = NO_LIST;
                 break;
             case SHUTDOWN:
