@@ -69,10 +69,9 @@ void loadUser(){
                 std::vector<std::string> number_to_id;
                 int i = 1;
                 for (auto &user : user_ids){
-                    std::cout << "user: " << user.first << std::endl;
                     number_to_id.push_back(user.first);
                     std::cout << i << ": ";
-                    user.second == "" ? std::cout << user.first : std::cout << user.second << " - " << user.first;
+                    user.second["name"] == "" ? std::cout << user.first : std::cout << user.second["name"] << " - " << user.first;
                     std::cout << std::endl;
                     i++;
                 }
@@ -115,7 +114,7 @@ void loadUser(){
 
         if (user_id != ""){
             if (client_json["user_id"]=="") std::cout << "Logged in as user: " << user_id << std::endl;
-            else std::cout << "Logged in as user: " << client_json["user_id"][user_id] << std::endl;
+            else std::cout << "Logged in as user: " << client_json["user_id"][user_id]["name"] << std::endl;
             break;
         }
     }
