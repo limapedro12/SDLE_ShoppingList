@@ -262,7 +262,7 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     
     // send to server
     Message cloneMessage("get", list_id, {});
-    s_send(socket, cloneMessage.toString());
+    send_and_recv(socket, cloneMessage.toString());
 
     // receive the list from the server, parse to json and save to file in the client dir
     std::string list_json = send_and_recv(socket, cloneMessage);
@@ -270,7 +270,7 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
         std::cerr << "Could not clone list" << std::endl;
         return;
     }
-    std::cout << "Received list: " << list_json << std::endl;
+    std::cout << "Received list" << std::endl;
     if(list_json == "{'No workers available to handle request.': 1}")
         return;
     json list = json::parse(list_json);

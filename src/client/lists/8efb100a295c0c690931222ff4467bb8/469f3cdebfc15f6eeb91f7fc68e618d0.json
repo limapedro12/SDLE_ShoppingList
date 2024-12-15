@@ -1,0 +1,100 @@
+{
+    "causal_histories": {
+        "8efb100a295c0c690931222ff4467bb8": 3
+    },
+    "map": {
+        "apple": {
+            "context_num": 1,
+            "counter": {
+                "causalHistory": {
+                    "8efb100a295c0c690931222ff4467bb8": 2
+                },
+                "counter": [
+                    [
+                        [
+                            "8efb100a295c0c690931222ff4467bb8",
+                            1
+                        ],
+                        [
+                            2,
+                            0
+                        ]
+                    ],
+                    [
+                        [
+                            "8efb100a295c0c690931222ff4467bb8",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ]
+                ]
+            },
+            "user_id": "8efb100a295c0c690931222ff4467bb8"
+        },
+        "banana": {
+            "context_num": 2,
+            "counter": {
+                "causalHistory": {
+                    "8efb100a295c0c690931222ff4467bb8": 2
+                },
+                "counter": [
+                    [
+                        [
+                            "8efb100a295c0c690931222ff4467bb8",
+                            1
+                        ],
+                        [
+                            2,
+                            0
+                        ]
+                    ],
+                    [
+                        [
+                            "8efb100a295c0c690931222ff4467bb8",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ]
+                ]
+            },
+            "user_id": "8efb100a295c0c690931222ff4467bb8"
+        },
+        "pinaple": {
+            "context_num": 3,
+            "counter": {
+                "causalHistory": {
+                    "8efb100a295c0c690931222ff4467bb8": 2
+                },
+                "counter": [
+                    [
+                        [
+                            "8efb100a295c0c690931222ff4467bb8",
+                            1
+                        ],
+                        [
+                            2,
+                            0
+                        ]
+                    ],
+                    [
+                        [
+                            "8efb100a295c0c690931222ff4467bb8",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ]
+                ]
+            },
+            "user_id": "8efb100a295c0c690931222ff4467bb8"
+        }
+    }
+}
