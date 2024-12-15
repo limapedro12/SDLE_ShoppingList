@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#include <atomic>
 #include <map>
 #include "../server/handler.hpp"
 #include "subscriber.hpp"
@@ -169,7 +170,9 @@ vector<ShoppingList> loadLists(){
     else{
         try{
             for (const auto & entry : std::filesystem::directory_iterator(listFolder)){
-                if (entry.is_regular_file() && entry.path().extension() == ".json"){
+                if (entry.is_regular_file() && 
+                    entry.path().extension() == ".json" && 
+                    entry.path().filename().string() != "subscriptions.json"){
                     std::string listId = entry.path().filename().string();
                     listId.erase(listId.length() - 5, 5);
 
@@ -528,7 +531,9 @@ int main() {
         subscriber.set(zmq::sockopt::subscribe, list.get_id());
     }
 
-    thread subscriptionThread(receiveSubscriptions, std::ref(subscriber), user_id);
+    std::atomic<bool> running{true};
+
+    thread subscriptionThread(receiveSubscriptions, std::ref(subscriber), user_id, std::ref(running));
 
     ShoppingList *current_shopping_list = nullptr;
 
@@ -554,6 +559,8 @@ int main() {
                 state = NO_LIST;
                 break;
             case SHUTDOWN:
+                running = false;  // Signal thread to stop
+                subscriptionThread.join();
                 std::cout << "See you next time!" << std::endl;
                 return 0;
         }
