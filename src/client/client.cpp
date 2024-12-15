@@ -67,6 +67,7 @@ void loadUser(){
     std::unordered_map<std::string, json> user_ids = client_json["user_id"];
     settings["automatic_push"] = client_json["settings"]["automatic_push"];
     settings["automatic_pull"] = client_json["settings"]["automatic_pull"];
+    settings["offline"] = false;
 
     while (true){
         std::cout << std::endl << "Do you want to login or create a new user?" << std::endl;
@@ -236,10 +237,10 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
 
     // send to server
     Message creation("create", list_id, {});
-    s_send(socket, creation.toString());
+    std::string reply = send_and_recv(socket, creation);
 
     // receive reply from server
-    std::cout << "Received reply from server " << s_recv(socket) << std::endl;
+    std::cout << "Received reply from server " << reply << std::endl;
     // todo once we actally send errors when stuff goes wrong on server
  
     // subscribe to list
@@ -260,7 +261,11 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     s_send(socket, cloneMessage.toString());
 
     // receive the list from the server, parse to json and save to file in the client dir
-    std::string list_json = s_recv(socket);
+    std::string list_json = send_and_recv(socket, cloneMessage);
+    if (list_json == ""){
+        std::cerr << "Could not clone list" << std::endl;
+        return;
+    }
     std::cout << "Received list: " << list_json << std::endl;
     if(list_json == "{'No workers available to handle request.': 1}")
         return;
@@ -368,7 +373,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
     std::cout << "2: Decrease an item" << std::endl;
     std::cout << "3: Remove an item" << std::endl;
     std::cout << "4: Change the quantity of an item" << std::endl;
-    settings["automatic_push"] ? std::cout << "5: Save, push list, and go back" << std::endl : std::cout << "5: Save and go back" << std::endl;
+    settings["automatic_push"] && !settings["offline"] ? std::cout << "5: Save, push list, and go back" << std::endl : std::cout << "5: Save and go back" << std::endl;
     std::cout << "6: Go back without saving" << std::endl;
     int selection;
     std::cin >> selection;
@@ -416,8 +421,10 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
         //send to server
         if (settings["automatic_push"]){
             Message mergeMessage(*shoppingList, "merge");
-            s_send(socket, mergeMessage.toString());
-            s_recv(socket);
+            std::string reply = send_and_recv(socket, mergeMessage);
+            if (reply == ""){
+                std::cerr << "Could not push list" << std::endl;
+            }
         }
 
         shoppingList = nullptr;
