@@ -14,6 +14,8 @@ int testShoppingList(){
   shopping_list.add("kiwi");
   shopping_list.add("mango");
 
+  // add 2 apple 2 banana 2 pinapple
+
   cout << shopping_list.print() << endl
        << endl;
 
@@ -26,9 +28,13 @@ int testShoppingList(){
   shopping_list_copy.remove("pinapple");
   shopping_list_copy.remove("mango");
 
+  // decrease 1 apple remove banana add 1 orange
+
   shopping_list.decrease("apple");
   shopping_list.decrease("banana", 2);
   shopping_list.add("pinapple");
+
+  // add 1 apple 1 banana change pinapple 10
 
   cout << "Shopping list after user 1:" << endl;
   cout << shopping_list.print() << endl

@@ -240,7 +240,8 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
     std::string reply = send_and_recv(socket, creation);
 
     // receive reply from server
-    std::cout << "Received reply from server " << reply << std::endl;
+    if(reply != "")
+        std::cout << "Received reply from server " << reply << std::endl;
     // todo once we actally send errors when stuff goes wrong on server
  
     // subscribe to list
