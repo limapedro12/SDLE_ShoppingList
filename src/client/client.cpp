@@ -540,7 +540,7 @@ int main() {
                 break;
             case SELECTING_LIST:
                 current_shopping_list = selectListUI(shopping_lists);
-                originalList = current_shopping_list->copy();
+                if (current_shopping_list != nullptr) originalList = current_shopping_list->copy();
                 break;
             case CLONE_LIST:
                 state = NO_LIST;
