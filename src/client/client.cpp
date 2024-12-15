@@ -230,7 +230,7 @@ int createList(vector<ShoppingList> &shopping_lists, zmq::socket_t &socket, zmq:
 
     // save to machine
     std::ofstream file("./client/lists/"+ user_id + "/" + list_id + ".json");
-    file << shopping_list.contentsToJSON();
+    file << shopping_list.contentsToJSON().dump(4);
     file.close();
 
     std::cout << "Created list with id: " << list_id << std::endl;
@@ -295,7 +295,7 @@ void cloneList(std::string list_id, zmq::socket_t& socket, vector<ShoppingList>&
     cout << "Added to shopping lists" << endl;
 
     std::ofstream file("./client/lists/" + list_id + ".json");
-    file << list;
+    file << list.dump(4);
     file.close();
 }
 
@@ -416,7 +416,7 @@ int alterListUI(ShoppingList* shoppingList, ShoppingList originalList, zmq::sock
 
         // saving to machine routine, it's pretty simple but we could wrap it in a function for clarity
         std::ofstream file("./client/lists/" + user_id + "/" + shoppingList->get_id() + ".json");
-        file << shoppingList->contentsToJSON();
+        file << shoppingList->contentsToJSON().dump(4);
         file.close();
 
         //send to server
