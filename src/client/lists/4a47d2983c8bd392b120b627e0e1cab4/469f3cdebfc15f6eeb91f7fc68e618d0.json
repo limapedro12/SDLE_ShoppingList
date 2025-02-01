@@ -1,15 +1,37 @@
 {
     "causal_histories": {
-        "8efb100a295c0c690931222ff4467bb8": 6
+        "4a47d2983c8bd392b120b627e0e1cab4": 3,
+        "8efb100a295c0c690931222ff4467bb8": 3
     },
     "map": {
         "apple": {
-            "context_num": 4,
+            "context_num": 1,
             "counter": {
                 "causalHistory": {
-                    "8efb100a295c0c690931222ff4467bb8": 4
+                    "4a47d2983c8bd392b120b627e0e1cab4": 2,
+                    "8efb100a295c0c690931222ff4467bb8": 2
                 },
                 "counter": [
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            1
+                        ],
+                        [
+                            0,
+                            1
+                        ]
+                    ],
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ],
                     [
                         [
                             "8efb100a295c0c690931222ff4467bb8",
@@ -29,38 +51,39 @@
                             0,
                             0
                         ]
-                    ],
-                    [
-                        [
-                            "8efb100a295c0c690931222ff4467bb8",
-                            3
-                        ],
-                        [
-                            1,
-                            0
-                        ]
-                    ],
-                    [
-                        [
-                            "8efb100a295c0c690931222ff4467bb8",
-                            4
-                        ],
-                        [
-                            0,
-                            0
-                        ]
                     ]
                 ]
             },
-            "user_id": "8efb100a295c0c690931222ff4467bb8"
+            "user_id": "4a47d2983c8bd392b120b627e0e1cab4"
         },
         "banana": {
-            "context_num": 5,
+            "context_num": 2,
             "counter": {
                 "causalHistory": {
-                    "8efb100a295c0c690931222ff4467bb8": 4
+                    "4a47d2983c8bd392b120b627e0e1cab4": 2,
+                    "8efb100a295c0c690931222ff4467bb8": 2
                 },
                 "counter": [
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            1
+                        ],
+                        [
+                            0,
+                            2
+                        ]
+                    ],
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ],
                     [
                         [
                             "8efb100a295c0c690931222ff4467bb8",
@@ -75,26 +98,6 @@
                         [
                             "8efb100a295c0c690931222ff4467bb8",
                             2
-                        ],
-                        [
-                            0,
-                            0
-                        ]
-                    ],
-                    [
-                        [
-                            "8efb100a295c0c690931222ff4467bb8",
-                            3
-                        ],
-                        [
-                            1,
-                            0
-                        ]
-                    ],
-                    [
-                        [
-                            "8efb100a295c0c690931222ff4467bb8",
-                            4
                         ],
                         [
                             0,
@@ -103,15 +106,67 @@
                     ]
                 ]
             },
-            "user_id": "8efb100a295c0c690931222ff4467bb8"
+            "user_id": "4a47d2983c8bd392b120b627e0e1cab4"
         },
-        "pinaple": {
-            "context_num": 6,
+        "orange": {
+            "context_num": 3,
             "counter": {
                 "causalHistory": {
-                    "8efb100a295c0c690931222ff4467bb8": 4
+                    "4a47d2983c8bd392b120b627e0e1cab4": 2
                 },
                 "counter": [
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            1
+                        ],
+                        [
+                            1,
+                            0
+                        ]
+                    ],
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ]
+                ]
+            },
+            "user_id": "4a47d2983c8bd392b120b627e0e1cab4"
+        },
+        "pinaple": {
+            "context_num": 3,
+            "counter": {
+                "causalHistory": {
+                    "4a47d2983c8bd392b120b627e0e1cab4": 2,
+                    "8efb100a295c0c690931222ff4467bb8": 2
+                },
+                "counter": [
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            1
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ],
+                    [
+                        [
+                            "4a47d2983c8bd392b120b627e0e1cab4",
+                            2
+                        ],
+                        [
+                            0,
+                            0
+                        ]
+                    ],
                     [
                         [
                             "8efb100a295c0c690931222ff4467bb8",
@@ -126,26 +181,6 @@
                         [
                             "8efb100a295c0c690931222ff4467bb8",
                             2
-                        ],
-                        [
-                            0,
-                            0
-                        ]
-                    ],
-                    [
-                        [
-                            "8efb100a295c0c690931222ff4467bb8",
-                            3
-                        ],
-                        [
-                            8,
-                            0
-                        ]
-                    ],
-                    [
-                        [
-                            "8efb100a295c0c690931222ff4467bb8",
-                            4
                         ],
                         [
                             0,

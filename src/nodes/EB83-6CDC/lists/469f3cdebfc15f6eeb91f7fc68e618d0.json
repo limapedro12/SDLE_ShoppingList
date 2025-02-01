@@ -1,16 +1,38 @@
 {
     "data": {
         "causal_histories": {
-            "8efb100a295c0c690931222ff4467bb8": 3
+            "4a47d2983c8bd392b120b627e0e1cab4": 3,
+            "8efb100a295c0c690931222ff4467bb8": 6
         },
         "map": {
             "apple": {
-                "context_num": 1,
+                "context_num": 0,
                 "counter": {
                     "causalHistory": {
-                        "8efb100a295c0c690931222ff4467bb8": 2
+                        "4a47d2983c8bd392b120b627e0e1cab4": 2,
+                        "8efb100a295c0c690931222ff4467bb8": 4
                     },
                     "counter": [
+                        [
+                            [
+                                "4a47d2983c8bd392b120b627e0e1cab4",
+                                1
+                            ],
+                            [
+                                0,
+                                1
+                            ]
+                        ],
+                        [
+                            [
+                                "4a47d2983c8bd392b120b627e0e1cab4",
+                                2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ],
                         [
                             [
                                 "8efb100a295c0c690931222ff4467bb8",
@@ -30,18 +52,59 @@
                                 0,
                                 0
                             ]
+                        ],
+                        [
+                            [
+                                "8efb100a295c0c690931222ff4467bb8",
+                                3
+                            ],
+                            [
+                                1,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "8efb100a295c0c690931222ff4467bb8",
+                                4
+                            ],
+                            [
+                                0,
+                                0
+                            ]
                         ]
                     ]
                 },
-                "user_id": "8efb100a295c0c690931222ff4467bb8"
+                "user_id": "EB83-6CDC"
             },
             "banana": {
-                "context_num": 2,
+                "context_num": 0,
                 "counter": {
                     "causalHistory": {
-                        "8efb100a295c0c690931222ff4467bb8": 2
+                        "4a47d2983c8bd392b120b627e0e1cab4": 2,
+                        "8efb100a295c0c690931222ff4467bb8": 4
                     },
                     "counter": [
+                        [
+                            [
+                                "4a47d2983c8bd392b120b627e0e1cab4",
+                                1
+                            ],
+                            [
+                                0,
+                                2
+                            ]
+                        ],
+                        [
+                            [
+                                "4a47d2983c8bd392b120b627e0e1cab4",
+                                2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ],
                         [
                             [
                                 "8efb100a295c0c690931222ff4467bb8",
@@ -61,16 +124,67 @@
                                 0,
                                 0
                             ]
+                        ],
+                        [
+                            [
+                                "8efb100a295c0c690931222ff4467bb8",
+                                3
+                            ],
+                            [
+                                1,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "8efb100a295c0c690931222ff4467bb8",
+                                4
+                            ],
+                            [
+                                0,
+                                0
+                            ]
                         ]
                     ]
                 },
-                "user_id": "8efb100a295c0c690931222ff4467bb8"
+                "user_id": "EB83-6CDC"
             },
-            "pinaple": {
+            "orange": {
                 "context_num": 3,
                 "counter": {
                     "causalHistory": {
-                        "8efb100a295c0c690931222ff4467bb8": 2
+                        "4a47d2983c8bd392b120b627e0e1cab4": 2
+                    },
+                    "counter": [
+                        [
+                            [
+                                "4a47d2983c8bd392b120b627e0e1cab4",
+                                1
+                            ],
+                            [
+                                1,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "4a47d2983c8bd392b120b627e0e1cab4",
+                                2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ]
+                    ]
+                },
+                "user_id": "4a47d2983c8bd392b120b627e0e1cab4"
+            },
+            "pinaple": {
+                "context_num": 6,
+                "counter": {
+                    "causalHistory": {
+                        "8efb100a295c0c690931222ff4467bb8": 4
                     },
                     "counter": [
                         [
@@ -87,6 +201,26 @@
                             [
                                 "8efb100a295c0c690931222ff4467bb8",
                                 2
+                            ],
+                            [
+                                0,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "8efb100a295c0c690931222ff4467bb8",
+                                3
+                            ],
+                            [
+                                8,
+                                0
+                            ]
+                        ],
+                        [
+                            [
+                                "8efb100a295c0c690931222ff4467bb8",
+                                4
                             ],
                             [
                                 0,
