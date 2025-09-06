@@ -13,7 +13,7 @@ consistent throughout the system, achiving strong enventual consitency.
 For messaging [ZeroMQ](https://zeromq.org/) and [JSON](https://www.json.org/) were user. ZeroMQ provides various functionalities, but we only used REP/REQ, ROUTER, Load 
 Balancing Message Broker, Majordomo Pattern.
 
-The cloud element, includes multiple nodes in a architecture based on Amazon's Dynamo, described in [Dynamo: Amazon’s Highly Available Key-value Store](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), using a use a partition-aware broker that routes requests directly to the appropriate nodes and Consistent hashing.
+The cloud element, we've implemented a system from scratch, that includes multiple nodes in a architecture based on Amazon's Dynamo, described in [Dynamo: Amazon’s Highly Available Key-value Store](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), using a use a partition-aware broker that routes requests directly to the appropriate nodes and Consistent hashing.
 
 For more details, please see the full [presentation](doc/SDLEg14.pdf).
 
