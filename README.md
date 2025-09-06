@@ -15,7 +15,7 @@ Balancing Message Broker, Majordomo Pattern.
 
 The cloud element, includes multiple nodes in a architecture based on Amazon's Dynamo, described in [Dynamo: Amazon’s Highly Available Key-value Store](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), using a use a partition-aware broker that routes requests directly to the appropriate nodes and Consistent hashing.
 
-For more details, please see the full [presentation]().
+For more details, please see the full [presentation](SDLEg14.pdf).
 
 Group members:
 
