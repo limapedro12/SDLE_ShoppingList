@@ -10,13 +10,12 @@ with an embedded stated-based counter, described in [The problem with embedded C
 This ensures that, even if multiple clients change the same shopping list at the same time, eventually they will be able to merge and remain
 consistent throughout the system, achiving strong enventual consitency.
 
-For messaging [ZeroMQ](https://zeromq.org/) and [JSON](https://www.json.org/), ... (Using REP/REQ and ROUTER, Load 
-Balancing Message Broker, Majordomo Pattern)
+For messaging [ZeroMQ](https://zeromq.org/) and [JSON](https://www.json.org/) were user. ZeroMQ provides various functionalities, but we only used REP/REQ, ROUTER, Load 
+Balancing Message Broker, Majordomo Pattern.
 
-The cloud element, includes multiple nodes in a architecture based on Amazon's Dynamo, described in [Dynamo: Amazon’s Highly Available Key-value Store](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)...
-(Using a use a partition-aware broker that routes requests directly to the appropriate nodes and Consistent hashing)
+The cloud element, includes multiple nodes in a architecture based on Amazon's Dynamo, described in [Dynamo: Amazon’s Highly Available Key-value Store](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf), using a use a partition-aware broker that routes requests directly to the appropriate nodes and Consistent hashing.
 
-SDLE Assignment of group T05G14.
+For more details, please see the full [presentation]().
 
 Group members:
 
